@@ -1,3 +1,2 @@
 # AppTesting
-Testing Repository of developing EDP code
-Testing a commit
+Edge attributes will now be contained within the same object. Reliance on database will be limited to initial graph creation. 
