@@ -65,13 +65,15 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import vtk.*;
 
 public class AppTesting extends JFrame implements ActionListener,MouseListener{
-
+	//GUI
 	private JPanel contentPane;
 	private JTextField textField;
 	private JTextField textField_1;
 	private JPanel panel; //so initiliaze can add renderer after gui has been loaded
 	private JPanel panel_2; //used for grey background
 	private int degreeCount=0;
+	private JMenuItem mntmImportCustomGraph;
+	private JMenuItem mntmExportGraph;
 	
 	 vtkGraphLayoutView view;
 	 vtkRenderWindowPanel renderer = new vtkRenderWindowPanel();
@@ -104,15 +106,16 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	 * Create the frame.
 	 */
 	//Initialize Renderer once the graph data has been loaded
-	public void InitializeRenderer()
+	public void InitializeRenderer(ExtendedGraph graphTemp)
 	{
-		CreateGraph graphCreator = new CreateGraph(organism);
-		this.graph=graphCreator.createMutableGraph();
+		System.out.println("Rendering");
+		this.graph=graphTemp;
+		
         view=new vtkGraphLayoutView();
         this.view.SetRenderWindow(this.renderer.GetRenderWindow());
     //  this.view.ColorVerticesOn();
    //   this.view.DisplayHoverTextOn();
-        this.view.SetLayoutStrategyToCircular();
+        this.view.SetLayoutStrategyToSimple2D();
         this.view.SetVertexLabelVisibility(true);
         this.view.SetVertexLabelArrayName("labels");
         this.view.AddRepresentationFromInput(this.graph.getGraph());
@@ -135,6 +138,9 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		gbc_panel_2.gridx = 0;
 		gbc_panel_2.gridy = 0;
 		panel.add(renderer, gbc_panel_2);
+		
+		//Import Export Action Listener
+		fileExchanger.UpdateGraph(graph);
 	}
 	
 	
@@ -152,19 +158,25 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		JMenu mnImportGraph = new JMenu("Import Graph");
 		mnFile.add(mnImportGraph);
 		
-		JMenuItem mntmExportGraph = new JMenuItem("Export Graph");
+		mntmExportGraph = new JMenuItem("Export Graph");
 		mnFile.add(mntmExportGraph);
 		
 		
-		JMenuItem mntmImportCustomGraph = new JMenuItem("Import Custom Graph");
-		fileExchanger=new FileImportExport(contentPane, mntmImportCustomGraph,mntmExportGraph);
-		mntmImportCustomGraph.addActionListener(fileExchanger);
+		mntmImportCustomGraph = new JMenuItem("Import Custom Graph");
 		mnImportGraph.add(mntmImportCustomGraph);
+		
+		//Import Export Action Listener 
+		fileExchanger=new FileImportExport(contentPane, mntmImportCustomGraph,mntmExportGraph,graph,this);
+		mntmImportCustomGraph.addActionListener(fileExchanger);
+		mntmExportGraph.addActionListener(fileExchanger);
 		
 		//Add action listener to Import 
 		JMenuItem mntmImportBiogridInteractions = new JMenuItem("Import Default BioGRID Graph");
 		mntmImportBiogridInteractions.addActionListener(this);
 			
+		
+		
+		
 		mnImportGraph.add(mntmImportBiogridInteractions);
 		
 		
@@ -547,7 +559,11 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	                "Organism Selection",
 	                JOptionPane.PLAIN_MESSAGE,null,
 	                organismList,organismList[0]);
-					this.InitializeRenderer();
+			
+					CreateGraph graphCreator = new CreateGraph(organism);
+					ExtendedGraph graphTemp=graphCreator.createMutableGraph();
+			
+					this.InitializeRenderer(graphTemp);
 					this.renderer.Render();
 					this.view.GetInteractor().Start();
 	}

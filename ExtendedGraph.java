@@ -72,5 +72,13 @@ public class ExtendedGraph {
 		this.pubMedID = pubMedID;
 	}
 	
+	public vtkIntArray getEdgeWeights()
+	{
+		return (vtkIntArray)this.graph.GetEdgeData().GetAbstractArray("weights");
+	}
 	
+	public vtkStringArray getLabels()
+	{
+		return (vtkStringArray)this.graph.GetVertexData().GetAbstractArray("labels");
+	}
 }

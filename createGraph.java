@@ -1,3 +1,4 @@
+import java.io.BufferedReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -19,6 +20,7 @@ public class CreateGraph {
 	ResultSet rs;
 	Map geneToId;
 	Map idToGene;
+	BufferedReader reader;
 	
 	public CreateGraph(String organism) 
 	{
@@ -35,6 +37,10 @@ public class CreateGraph {
 		}
 	}
 	
+	public CreateGraph(BufferedReader reader)
+	{
+		this.reader=reader;
+	}
 	 static {
 	        if (!vtkNativeLibrary.LoadAllNativeLibraries()) {
 	            for (vtkNativeLibrary lib : vtkNativeLibrary.values()) {
@@ -203,13 +209,13 @@ public class CreateGraph {
 	
 	public void setAttributes(ExtendedGraph graph) throws Exception
 	{
-		
 		//Array lists to hold edge indices. Since the edges have been grouped in order to make
 		//edge weights the data for each interaction between to genes must be maintained through a 2-d array list
 		ArrayList<ArrayList> pubMedID = new ArrayList<ArrayList>();
 		ArrayList<ArrayList> experimentalSystem = new ArrayList<ArrayList>();
 		ArrayList<ArrayList> experimentalSystemType = new ArrayList<ArrayList>();
 		ArrayList<ArrayList> author = new ArrayList<ArrayList>();
+		
 		vtkEdgeListIterator iterator = new vtkEdgeListIterator();
 		
 		//Edge list iterator
@@ -231,7 +237,7 @@ public class CreateGraph {
 		
 		
 		
-		System.out.println("LIST /n/n");
+		//System.out.println("LIST /n/n");
 		while(iterator.HasNext())
 		{
 			edge=iterator.NextGraphEdge();
@@ -239,14 +245,14 @@ public class CreateGraph {
 			gene2=edge.GetTarget();
 			int edgeId=edge.GetId();
 			
-			System.out.println(idToGene.get(gene1) + " " + idToGene.get(gene2) + " " + edgeWeights.GetValue(edgeId) );
+		//	System.out.println(idToGene.get(gene1) + " " + idToGene.get(gene2) + " " + edgeWeights.GetValue(edgeId) );
 			//Query database for desired attributes
 			statement = con.prepareStatement("SELECT Pubmed_ID,Experimental_System,Author,Experimental_System_Type from " + organismSelected + " WHERE (Official_Symbol_Interactor_A= '" + geneNames.GetValue(gene1) + "' AND Official_Symbol_Interactor_B='" + geneNames.GetValue(gene2)+ "') OR (Official_Symbol_Interactor_A= '" + geneNames.GetValue(gene2) + "' AND Official_Symbol_Interactor_B='" + geneNames.GetValue(gene1)+ "')");
 			rs= statement.executeQuery();
 			
 			while(rs.next())
 			{
-				System.out.println(rs.getInt(1) + " " +rs.getString(2) + " " + rs.getString(3) + " " + rs.getString(4));
+				//System.out.println(rs.getInt(1) + " " +rs.getString(2) + " " + rs.getString(3) + " " + rs.getString(4));
 				temp.add(rs.getInt(1));
 				temp2.add(rs.getString(2));
 				temp3.add(rs.getString(3));
@@ -259,8 +265,106 @@ public class CreateGraph {
 			experimentalSystemType.add(temp4);
 			
 		}
+		graph.setAuthor(author);
+		graph.setSystem(experimentalSystem);
+		graph.setPubMedID(pubMedID);
+		graph.setSystemType(experimentalSystemType);
 	}
-	 
+	
+	
+	public ExtendedGraph ImportMutableGraph() throws Exception
+	{
+		ExtendedGraph graph = new ExtendedGraph();
+		//text oder: Gene1,Gene2, Edge Weight, User Edge Weight, Author, System Type, System, PubmedID
+		String s=reader.readLine();//first line is only headers
+		
+		
+		String tab="\t";
+		int index1=0;
+		int index2=0;
+		
+		int tempVert1; //Holds vertex id for adding edges
+		int tempVert2; //Holds vertex id for adding edges
+		
+		String gene1;
+		String gene2;
+		
+		//label array
+		vtkStringArray labels = new vtkStringArray();
+		labels.SetNumberOfComponents(1);
+		labels.SetName("labels");
+		
+		//edge weight array
+		vtkIntArray weights = new vtkIntArray();
+		weights.SetNumberOfComponents(1);
+		weights.SetName("weights");
+		
+		geneToId= new HashMap(); //going from gene name to vertex id
+		idToGene = new HashMap(); //vice versa
+		int vertexNum=0; //increment for vertex id
+		int edgeNum=0;
+		ArrayList<Integer> vertices = new ArrayList<Integer>();
+		
+		int edgeWeight;
+		//Arrays to hold relevant data for each edge
+		ArrayList<ArrayList> author = new ArrayList<ArrayList>();
+		ArrayList<ArrayList> systemType= new ArrayList<ArrayList>();
+		ArrayList<ArrayList> system = new ArrayList<ArrayList>();
+		ArrayList<ArrayList> pubMedID = new ArrayList<ArrayList>();
+		ArrayList<String> tempValues = new ArrayList<String>();
+		
+		
+		while((s=reader.readLine())!=null)
+		{
+			index2= s.indexOf(tab);
+			while(index2!=-1)
+			{
+				tempValues.add(s.substring(index1, index2));
+				s=s.substring(index2+1, s.length()-1);
+				index2= s.indexOf(tab);
+			}
+			
+			if(idToGene.containsValue(tempValues.get(0))!=true)
+			{
+				idToGene.put(vertexNum, tempValues.get(0));//add vertex
+				geneToId.put(tempValues.get(0), vertexNum);
+				labels.InsertNextValue(tempValues.get(0));
+				vertices.add(graph.getGraph().AddVertex());
+				vertexNum++;
+			}
+			if(idToGene.containsValue(tempValues.get(1))!=true)
+			{
+				idToGene.put(vertexNum, tempValues.get(1));//add Vertex
+				geneToId.put(tempValues.get(1), vertexNum);
+				labels.InsertNextValue(tempValues.get(1));
+				vertices.add(graph.getGraph().AddVertex());
+				vertexNum++;
+			}
+			
+			
+			//Insert edge weight value into array
+			edgeWeight=Integer.parseInt(tempValues.get(2));
+			weights.InsertNextValue(edgeWeight);
+			
+			System.out.println("Test" + tempValues.get(0) + ": " + geneToId.get(tempValues.get(0))+ " "+ tempValues.get(1) + ": " + geneToId.get(tempValues.get(1)));
+			
+			tempVert1=(int)geneToId.get(tempValues.get(0));
+			tempVert2=(int)geneToId.get(tempValues.get(1));
+			
+			graph.getGraph().AddGraphEdge(tempVert1,tempVert2); //Add edge based on vertex indices
+			//graph.getGraph().AddGraphEdge(vertices.get((int)geneToId.get(tempValues.get(0))),vertices.get((int)geneToId.get(tempValues.get(1)))); //Add edge based on vertex indices
+			System.out.println("Test");
+			
+			for(int i=0; i<edgeWeight;i++)
+			{
+				s=reader.readLine();
+			}
+			tempValues.clear();
+		}
+		graph.getGraph().GetVertexData().AddArray(labels);
+		graph.getGraph().GetEdgeData().AddArray(weights);
+		return graph;
+	}
 }
 
 
