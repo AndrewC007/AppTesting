@@ -77,8 +77,8 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	 vtkRenderWindowPanel renderer = new vtkRenderWindowPanel();
 	 vtkRenderedGraphRepresentation rep = new vtkRenderedGraphRepresentation();
      vtkGraphLayout graphLayout = new vtkGraphLayout();
-     vtkMutableUndirectedGraph graph = new vtkMutableUndirectedGraph();
-     vtkMutableUndirectedGraph extractedGraph = new vtkMutableUndirectedGraph();
+     ExtendedGraph graph = new ExtendedGraph();
+     ExtendedGraph extractedGraph = new ExtendedGraph();
      vtkAnnotationLink link = new vtkAnnotationLink();
      vtkDataRepresentation dataRep = new vtkDataRepresentation();
      vtkIdTypeArray vertices;
@@ -87,6 +87,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
      String organism;
      JEditorPane editorPane = new JEditorPane();
      Popup popup;
+     FileImportExport fileExchanger; //Used for importing and exporting files
      
      int xCoord;
      int yCoord;
@@ -105,15 +106,16 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	//Initialize Renderer once the graph data has been loaded
 	public void InitializeRenderer()
 	{
-		this.graph=createGraph.createMutableGraph(organism);
+		CreateGraph graphCreator = new CreateGraph(organism);
+		this.graph=graphCreator.createMutableGraph();
         view=new vtkGraphLayoutView();
         this.view.SetRenderWindow(this.renderer.GetRenderWindow());
-      //  this.view.ColorVerticesOn();
-     //   this.view.DisplayHoverTextOn();
+    //  this.view.ColorVerticesOn();
+   //   this.view.DisplayHoverTextOn();
         this.view.SetLayoutStrategyToCircular();
         this.view.SetVertexLabelVisibility(true);
         this.view.SetVertexLabelArrayName("labels");
-        this.view.AddRepresentationFromInput(this.graph);
+        this.view.AddRepresentationFromInput(this.graph.getGraph());
         this.view.SetEnableVerticesByArray(Boolean.TRUE);
         this.view.ResetCamera();
         
@@ -150,7 +152,13 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		JMenu mnImportGraph = new JMenu("Import Graph");
 		mnFile.add(mnImportGraph);
 		
+		JMenuItem mntmExportGraph = new JMenuItem("Export Graph");
+		mnFile.add(mntmExportGraph);
+		
+		
 		JMenuItem mntmImportCustomGraph = new JMenuItem("Import Custom Graph");
+		fileExchanger=new FileImportExport(contentPane, mntmImportCustomGraph,mntmExportGraph);
+		mntmImportCustomGraph.addActionListener(fileExchanger);
 		mnImportGraph.add(mntmImportCustomGraph);
 		
 		//Add action listener to Import 
@@ -159,8 +167,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 			
 		mnImportGraph.add(mntmImportBiogridInteractions);
 		
-		JMenuItem mntmExportGraph = new JMenuItem("Export Graph");
-		mnFile.add(mntmExportGraph);
+		
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.DARK_GRAY);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -427,7 +434,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 			original=true;
 			extractedGraph=null;
 			view.RemoveAllRepresentations();
-			view.AddRepresentationFromInput(graph);
+			view.AddRepresentationFromInput(graph.getGraph());
 			dataRep = view.GetRepresentation(0);
 			
 			link.RemoveAllObservers();
@@ -451,10 +458,10 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 //				
 //				link = rep.GetAnnotationLink();
 //				link.AddObserver("AnnotationChangedEvent", this,  "selectionCallback");
-//				
-				extractedGraph= graphInteractor.extract(vertices,graph);
+//               
+				extractedGraph.setGraph(graphInteractor.extract(vertices,graph.getGraph()));
 				view.RemoveAllRepresentations();
-				view.AddRepresentationFromInput(extractedGraph);
+				view.AddRepresentationFromInput(extractedGraph.getGraph());
 				
 				
 				link.RemoveAllObservers();
@@ -476,9 +483,9 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 //				link = rep.GetAnnotationLink();
 //				link.AddObserver("AnnotationChangedEvent", this,  "selectionCallback");
 //				
-				extractedGraph= graphInteractor.extract(vertices,extractedGraph);
+				extractedGraph.setGraph(graphInteractor.extract(vertices,extractedGraph.getGraph()));
 				view.RemoveAllRepresentations();
-				view.AddRepresentationFromInput(extractedGraph);
+				view.AddRepresentationFromInput(extractedGraph.getGraph());
 				
 				
 				link.RemoveAllObservers();
@@ -516,7 +523,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 			DatabaseConnector connect = new DatabaseConnector();
 			if(vertices.GetNumberOfTuples() ==1  && original==true)
 			{
-				connect.getGeneInfo(graph, vertices.GetValue(0),organism,editorPane);
+				connect.getGeneInfo(graph.getGraph(), vertices.GetValue(0),organism,editorPane);
 			}
 //			if (vertices.GetNumberOfTuples() > 0) {
 //				if(vertices.GetNumberOfTuples() ==1  && original==true)
