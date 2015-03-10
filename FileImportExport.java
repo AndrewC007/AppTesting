@@ -101,31 +101,25 @@ public class FileImportExport implements ActionListener {
 			edge=iterator.NextGraphEdge();
 			
 			writer.println(genes.GetValue(edge.GetTarget())+ "\t" + genes.GetValue(edge.GetSource()) + "\t" 
-			+ weights.GetValue(edge.GetId())+"\t-\t-\t-\t-\t-");
+			+ weights.GetValue(edge.GetId())+"\t-\t-\t-\t-\t-\t ");
 			for(int i=0;i<weights.GetValue(edge.GetId());i++)
 			{
 				//formatted string
 				writer.println("-\t-\t-\t-\t" + authors.get(edge.GetId()).get(i) +"\t"+
 						systemType.get(edge.GetId()).get(i) + "\t" + system.get(edge.GetId()).get(i)
-						+"\t"+pubMedID.get(edge.GetId()).get(i));
+						+"\t"+pubMedID.get(edge.GetId()).get(i).toString()+ "\t ");
 			}
 		}
-		
 		writer.close();
 	}
 	
 	public void ImportGraph(File file, ExtendedGraph graph) throws Exception
 	{
-		System.out.println("Test");
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		//String s=reader.readLine();
-		System.out.println("Test");
 		CreateGraph createGraph= new CreateGraph(reader);
-		System.out.println("Test");
 		graph=createGraph.ImportMutableGraph();
-		System.out.println("Test");
 		appTest.InitializeRenderer(graph);
-		System.out.println("Test");
 		//System.out.println(s);
 	}
 }

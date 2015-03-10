@@ -52,10 +52,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
+
+
 
 
 
@@ -90,6 +94,8 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
      JEditorPane editorPane = new JEditorPane();
      Popup popup;
      FileImportExport fileExchanger; //Used for importing and exporting files
+     JMenuItem mntmImportBiogridInteractions; //menu for default biogrid graph creation
+     JMenuItem importGeneGraph;
      
      int xCoord;
      int yCoord;
@@ -110,6 +116,16 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	{
 		System.out.println("Rendering");
 		this.graph=graphTemp;
+		
+		
+		//TESTING
+//		System.out.println("LABELS2:");
+//		vtkIntArray labelsTest = (vtkIntArray) graphTemp.getGraph().GetVertexData().GetAbstractArray("labels");
+//		for(int i=0;i<labelsTest.GetSize();i++)
+//			System.out.println(labelsTest.GetValue(i));
+		
+		
+		
 		
         view=new vtkGraphLayoutView();
         this.view.SetRenderWindow(this.renderer.GetRenderWindow());
@@ -171,14 +187,17 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		mntmExportGraph.addActionListener(fileExchanger);
 		
 		//Add action listener to Import 
-		JMenuItem mntmImportBiogridInteractions = new JMenuItem("Import Default BioGRID Graph");
+		mntmImportBiogridInteractions = new JMenuItem("Import Default BioGRID Graph");
 		mntmImportBiogridInteractions.addActionListener(this);
+		
+		importGeneGraph = new JMenuItem("Import Gene Based Graph");
+		importGeneGraph.addActionListener(this);
 			
 		
 		
 		
 		mnImportGraph.add(mntmImportBiogridInteractions);
-		
+		mnImportGraph.add(importGeneGraph);
 		
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.DARK_GRAY);
@@ -535,7 +554,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 			DatabaseConnector connect = new DatabaseConnector();
 			if(vertices.GetNumberOfTuples() ==1  && original==true)
 			{
-				connect.getGeneInfo(graph.getGraph(), vertices.GetValue(0),organism,editorPane);
+				connect.getGeneInfo(graph, vertices.GetValue(0),editorPane);
 			}
 //			if (vertices.GetNumberOfTuples() > 0) {
 //				if(vertices.GetNumberOfTuples() ==1  && original==true)
@@ -551,21 +570,42 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	}
 	
 	public void actionPerformed(ActionEvent e){
+			
+			ExtendedGraph graphTemp = new ExtendedGraph();
 			DatabaseConnector connect = new DatabaseConnector();
-			String[] organismList= connect.getOrganismList();
-			organism = (String)JOptionPane.showInputDialog(
-	                contentPane,
-	                "Pick an Organism:",
-	                "Organism Selection",
-	                JOptionPane.PLAIN_MESSAGE,null,
-	                organismList,organismList[0]);
-			
-					CreateGraph graphCreator = new CreateGraph(organism);
-					ExtendedGraph graphTemp=graphCreator.createMutableGraph();
-			
-					this.InitializeRenderer(graphTemp);
-					this.renderer.Render();
-					this.view.GetInteractor().Start();
+			HashMap<String,Integer> NameToTaxID = new HashMap<String,Integer>();
+			try{
+				if(e.getSource()==mntmImportBiogridInteractions)
+				{
+					String[] organismList;
+					organismList= connect.getOrganismListURLDriven(NameToTaxID);
+					Arrays.sort(organismList);
+					organism = (String)JOptionPane.showInputDialog(
+		                contentPane,
+		                "Pick an Organism:",
+		                "Organism Selection",
+		                JOptionPane.PLAIN_MESSAGE,null,
+		                organismList,organismList[0]);
+				
+					int taxID= NameToTaxID.get(organism);
+						
+					CreateGraph graphCreator = new CreateGraph(taxID,NameToTaxID);
+					graphTemp=graphCreator.createMutableGraphURL();
+				}
+				else if(e.getSource()==importGeneGraph)
+				{
+					String geneName = JOptionPane.showInputDialog(
+							"Please enter the gene name:");
+					CreateGraph graphCreator = new CreateGraph(geneName,NameToTaxID);
+					graphTemp=graphCreator.createMutableGraphURL();
+				}
+				this.InitializeRenderer(graphTemp);
+				this.renderer.Render();
+				this.view.GetInteractor().Start();
+			}
+			catch(Exception exc){
+				System.out.println(exc.getMessage());
+			}
 	}
 	
 	public void PopupShow()
