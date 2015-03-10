@@ -78,7 +78,6 @@ public class GraphInteract {
 	}
 	
 	
-	
 		 
 /// READING AN XML FILE		
 	   public String articleParser(URL pubmedURL, String infoWanted) {

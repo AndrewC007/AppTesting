@@ -1,3 +1,4 @@
+import java.io.BufferedReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -11,8 +12,35 @@ import java.sql.*;
 
 import vtk.*;
 
-public class createGraph {
+public class CreateGraph {
 	
+	String organismSelected;
+	Connection con;
+	PreparedStatement statement;
+	ResultSet rs;
+	Map geneToId;
+	Map idToGene;
+	BufferedReader reader;
+	
+	public CreateGraph(String organism) 
+	{
+		this.organismSelected=organism;
+		try{
+		Class.forName("com.mysql.jdbc.Driver");
+		//Information should be the same; "EDP" should be changed to password of user you are using on your system
+		con = DriverManager.getConnection("jdbc:mysql://localhost:3306/organism","root","EDP");
+		//Create MySQL query statement
+		}
+		catch(Exception e)
+		{
+			
+		}
+	}
+	
+	public CreateGraph(BufferedReader reader)
+	{
+		this.reader=reader;
+	}
 	 static {
 	        if (!vtkNativeLibrary.LoadAllNativeLibraries()) {
 	            for (vtkNativeLibrary lib : vtkNativeLibrary.values()) {
@@ -24,22 +52,19 @@ public class createGraph {
 	        vtkNativeLibrary.DisableOutputWindow(null);
 	     }
 
-	public static vtkMutableUndirectedGraph createMutableGraph(String organism) 
+	public ExtendedGraph createMutableGraph() 
 	{
-		vtkMutableUndirectedGraph testing = new vtkMutableUndirectedGraph();
+		ExtendedGraph testing = new ExtendedGraph();
+	//	vtkMutableUndirectedGraph testing = new vtkMutableUndirectedGraph();
 		try
 		{
-			Class.forName("com.mysql.jdbc.Driver");
-			//Information should be the same; "EDP" should be changed to password of user you are using on your system
-			Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/organism","root","EDP");
-			//Create MySQL query statement
-			PreparedStatement statement = con.prepareStatement("SELECT Official_Symbol_Interactor_A,Official_Symbol_Interactor_B from " + organism);
-			ResultSet rs = statement.executeQuery();
+			statement = con.prepareStatement("SELECT Official_Symbol_Interactor_A,Official_Symbol_Interactor_B from " + organismSelected);
+			rs = statement.executeQuery();
 			
 		
 				//Create hashmaps so that the gene or id can be retrieved when the other is known
-				Map geneToId = new HashMap();
-				Map idToGene = new HashMap();
+				geneToId = new HashMap();
+				idToGene = new HashMap();
 					
 				int i=0;
 				int k=0;
@@ -90,31 +115,16 @@ public class createGraph {
 			weights.SetNumberOfComponents(1);
 			weights.SetName("weights");
 			
-			vtkIntArray pubMedId = new vtkIntArray();
-			weights.SetNumberOfComponents(1);
-			weights.SetName("pubMedId");
-			
-			vtkStringArray author = new vtkStringArray();
-			weights.SetNumberOfComponents(1);
-			weights.SetName("author");
-			
-			vtkStringArray systemType = new vtkStringArray();
-			weights.SetNumberOfComponents(1);
-			weights.SetName("systemType");
-			
-			vtkStringArray system = new vtkStringArray();
-			weights.SetNumberOfComponents(1);
-			weights.SetName("system");
 			//create labels for the corresponding genes
 			
 			for(int j=0; j<geneToId.size();j++)
 			{
-				v[j]=testing.AddVertex();
+				v[j]=testing.getGraph().AddVertex();
 				labels.InsertNextValue((String)idToGene.get(j));
 			}
 			
 			//find repeat edges
-			statement = con.prepareStatement("SELECT Official_Symbol_Interactor_A,Official_Symbol_Interactor_B, count(*) as NumDup from " + organism + " GROUP BY Official_Symbol_Interactor_A, Official_Symbol_Interactor_B having NumDup>0");
+			statement = con.prepareStatement("SELECT Official_Symbol_Interactor_A,Official_Symbol_Interactor_B, count(*) as NumDup from " + organismSelected + " GROUP BY Official_Symbol_Interactor_A, Official_Symbol_Interactor_B having NumDup>0");
 			//statement = con.prepareStatement("SELECT ta.Official_Symbol_Interactor_A,ta.Official_Symbol_Interactor_B, COUNT(*) from " + organism + " ta WHERE (SELECT COUNT(*) FROM " + organism + " ta2 WHERE (ta.Official_Symbol_Interactor_A=ta2.Official_Symbol_Interactor_A AND ta.Official_Symbol_Interactor_B=ta2.Official_Symbol_Interactor_B) OR (ta.Official_Symbol_Interactor_A=ta2.Official_Symbol_Interactor_B AND ta.Official_Symbol_Interactor_B=ta2.Official_Symbol_Interactor_A) )>0 GROUP BY Official_Symbol_Interactor_A, Official_Symbol_Interactor_B");
 			//statement = con.prepareStatement("SELECT Official_Symbol_Interactor_A,Official_Symbol_Interactor_B from " + organism);
 			
@@ -128,39 +138,27 @@ public class createGraph {
 			//Array list to hold edge weight values
 			List<Integer> edgeWeights = new ArrayList<Integer>();
 			
-//			ArrayList<Integer> test1 = new ArrayList<Integer>();
-//			ArrayList<Integer> test2 = new ArrayList<Integer>();
-//			
-//			test1.add(2);
-//			test1.add(3);
-//			test1.add(4);
-//			
-//			test2.add(3);
-//			
-//			System.out.println(createGraph.similarValues(test1, test2));
-			//must account for repeat edges where the genes are not in the same columns. (ie. Gene A is now Gene B and Gene B is now Gene A) this is not registered as a repeat.
-			//rs.beforeFirst();
 			int j =0;
 			
 			
 		//similarValues returns -1 if the two genes have not been added and returns the index of the interactions if their interaction has been added
 			while(rs.next())
 			{
-				ArrayList gene1Temp=createGraph.indexOfAll(rs.getString("Official_Symbol_Interactor_B"), gene1);
-				ArrayList gene2Temp=createGraph.indexOfAll(rs.getString("Official_Symbol_Interactor_A"), gene2);
+				ArrayList gene1Temp=CreateGraph.indexOfAll(rs.getString("Official_Symbol_Interactor_B"), gene1);
+				ArrayList gene2Temp=CreateGraph.indexOfAll(rs.getString("Official_Symbol_Interactor_A"), gene2);
+			//	System.out.println(rs.getString("Official_Symbol_Interactor_A") + " " + rs.getString("Official_Symbol_Interactor_B") + " " + rs.getInt(3));
 				
 				//System.out.println(createGraph.similarValues(gene1Temp, gene2Temp));
-				if(createGraph.similarValues(gene1Temp,gene2Temp)<0)
+				if(CreateGraph.similarValues(gene1Temp,gene2Temp)<0)
 				{
 					gene1.add(rs.getString("Official_Symbol_Interactor_A"));
 					gene2.add(rs.getString("Official_Symbol_Interactor_B"));
-					testing.AddGraphEdge(v[(int)geneToId.get(rs.getString("Official_Symbol_Interactor_A"))],v[(int)geneToId.get(rs.getString("Official_Symbol_Interactor_B"))]);
+					testing.getGraph().AddGraphEdge(v[(int)geneToId.get(rs.getString("Official_Symbol_Interactor_A"))],v[(int)geneToId.get(rs.getString("Official_Symbol_Interactor_B"))]);
 					edgeWeights.add(rs.getInt(3));
-					//System.out.println(rs.getString("Official_Symbol_Interactor_A") + " " + rs.getString("Official_Symbol_Interactor_B") + " " + rs.getInt(3));
 				}
-				else if(createGraph.similarValues(gene1Temp,gene2Temp)>0)
+				else if(CreateGraph.similarValues(gene1Temp,gene2Temp)>=0)
 				{
-					int index = createGraph.similarValues(gene1Temp,gene2Temp);
+					int index = CreateGraph.similarValues(gene1Temp,gene2Temp);
 					edgeWeights.add(index, edgeWeights.get(index)+rs.getInt(3));
 				}
 			}
@@ -171,11 +169,9 @@ public class createGraph {
 			{
 				weights.InsertNextValue(edgeWeights.get(l));
 			}
-			testing.GetVertexData().AddArray(labels);
-			testing.GetEdgeData().AddArray(weights);
-	
-			System.out.println(testing.GetNumberOfEdges() + " " + geneToId.size());
-			
+			testing.getGraph().GetVertexData().AddArray(labels);
+			testing.getGraph().GetEdgeData().AddArray(weights);
+			this.setAttributes(testing);		
 		}
 		catch(Exception e)
 		{
@@ -210,7 +206,165 @@ public class createGraph {
 		}
 		return value;
 	}
-	 
+	
+	public void setAttributes(ExtendedGraph graph) throws Exception
+	{
+		//Array lists to hold edge indices. Since the edges have been grouped in order to make
+		//edge weights the data for each interaction between to genes must be maintained through a 2-d array list
+		ArrayList<ArrayList> pubMedID = new ArrayList<ArrayList>();
+		ArrayList<ArrayList> experimentalSystem = new ArrayList<ArrayList>();
+		ArrayList<ArrayList> experimentalSystemType = new ArrayList<ArrayList>();
+		ArrayList<ArrayList> author = new ArrayList<ArrayList>();
+		
+		vtkEdgeListIterator iterator = new vtkEdgeListIterator();
+		
+		//Edge list iterator
+		graph.getGraph().GetEdges(iterator);
+		vtkGraphEdge edge;
+		int gene1;
+		int gene2;
+		
+		
+		//used for debugging purposes
+		vtkStringArray geneNames = (vtkStringArray)graph.getGraph().GetVertexData().GetAbstractArray("labels");
+		vtkIntArray edgeWeights = (vtkIntArray)graph.getGraph().GetEdgeData().GetAbstractArray("weights");
+		
+		//Temporary array lists to add to the array lists that hold the edge indices
+		ArrayList<Integer> temp = new ArrayList<Integer>();
+		ArrayList<String> temp2 = new ArrayList<String>();
+		ArrayList<String> temp3 = new ArrayList<String>();
+		ArrayList<String> temp4 = new ArrayList<String>();
+		
+		
+		
+		//System.out.println("LIST /n/n");
+		while(iterator.HasNext())
+		{
+			edge=iterator.NextGraphEdge();
+			gene1=edge.GetSource();
+			gene2=edge.GetTarget();
+			int edgeId=edge.GetId();
+			
+		//	System.out.println(idToGene.get(gene1) + " " + idToGene.get(gene2) + " " + edgeWeights.GetValue(edgeId) );
+			//Query database for desired attributes
+			statement = con.prepareStatement("SELECT Pubmed_ID,Experimental_System,Author,Experimental_System_Type from " + organismSelected + " WHERE (Official_Symbol_Interactor_A= '" + geneNames.GetValue(gene1) + "' AND Official_Symbol_Interactor_B='" + geneNames.GetValue(gene2)+ "') OR (Official_Symbol_Interactor_A= '" + geneNames.GetValue(gene2) + "' AND Official_Symbol_Interactor_B='" + geneNames.GetValue(gene1)+ "')");
+			rs= statement.executeQuery();
+			
+			while(rs.next())
+			{
+				//System.out.println(rs.getInt(1) + " " +rs.getString(2) + " " + rs.getString(3) + " " + rs.getString(4));
+				temp.add(rs.getInt(1));
+				temp2.add(rs.getString(2));
+				temp3.add(rs.getString(3));
+				temp4.add(rs.getString(4));
+			}
+			
+			pubMedID.add(temp);
+			experimentalSystem.add(temp2);
+			author.add(temp3);
+			experimentalSystemType.add(temp4);
+			
+		}
+		graph.setAuthor(author);
+		graph.setSystem(experimentalSystem);
+		graph.setPubMedID(pubMedID);
+		graph.setSystemType(experimentalSystemType);
+	}
+	
+	
+	public ExtendedGraph ImportMutableGraph() throws Exception
+	{
+		ExtendedGraph graph = new ExtendedGraph();
+		//text oder: Gene1,Gene2, Edge Weight, User Edge Weight, Author, System Type, System, PubmedID
+		String s=reader.readLine();//first line is only headers
+		
+		
+		String tab="\t";
+		int index1=0;
+		int index2=0;
+		
+		int tempVert1; //Holds vertex id for adding edges
+		int tempVert2; //Holds vertex id for adding edges
+		
+		String gene1;
+		String gene2;
+		
+		//label array
+		vtkStringArray labels = new vtkStringArray();
+		labels.SetNumberOfComponents(1);
+		labels.SetName("labels");
+		
+		//edge weight array
+		vtkIntArray weights = new vtkIntArray();
+		weights.SetNumberOfComponents(1);
+		weights.SetName("weights");
+		
+		geneToId= new HashMap(); //going from gene name to vertex id
+		idToGene = new HashMap(); //vice versa
+		int vertexNum=0; //increment for vertex id
+		int edgeNum=0;
+		ArrayList<Integer> vertices = new ArrayList<Integer>();
+		
+		int edgeWeight;
+		//Arrays to hold relevant data for each edge
+		ArrayList<ArrayList> author = new ArrayList<ArrayList>();
+		ArrayList<ArrayList> systemType= new ArrayList<ArrayList>();
+		ArrayList<ArrayList> system = new ArrayList<ArrayList>();
+		ArrayList<ArrayList> pubMedID = new ArrayList<ArrayList>();
+		ArrayList<String> tempValues = new ArrayList<String>();
+		
+		
+		while((s=reader.readLine())!=null)
+		{
+			index2= s.indexOf(tab);
+			while(index2!=-1)
+			{
+				tempValues.add(s.substring(index1, index2));
+				s=s.substring(index2+1, s.length()-1);
+				index2= s.indexOf(tab);
+			}
+			
+			if(idToGene.containsValue(tempValues.get(0))!=true)
+			{
+				idToGene.put(vertexNum, tempValues.get(0));//add vertex
+				geneToId.put(tempValues.get(0), vertexNum);
+				labels.InsertNextValue(tempValues.get(0));
+				vertices.add(graph.getGraph().AddVertex());
+				vertexNum++;
+			}
+			if(idToGene.containsValue(tempValues.get(1))!=true)
+			{
+				idToGene.put(vertexNum, tempValues.get(1));//add Vertex
+				geneToId.put(tempValues.get(1), vertexNum);
+				labels.InsertNextValue(tempValues.get(1));
+				vertices.add(graph.getGraph().AddVertex());
+				vertexNum++;
+			}
+			
+			
+			//Insert edge weight value into array
+			edgeWeight=Integer.parseInt(tempValues.get(2));
+			weights.InsertNextValue(edgeWeight);
+			
+			System.out.println("Test" + tempValues.get(0) + ": " + geneToId.get(tempValues.get(0))+ " "+ tempValues.get(1) + ": " + geneToId.get(tempValues.get(1)));
+			
+			tempVert1=(int)geneToId.get(tempValues.get(0));
+			tempVert2=(int)geneToId.get(tempValues.get(1));
+			
+			graph.getGraph().AddGraphEdge(tempVert1,tempVert2); //Add edge based on vertex indices
+			//graph.getGraph().AddGraphEdge(vertices.get((int)geneToId.get(tempValues.get(0))),vertices.get((int)geneToId.get(tempValues.get(1)))); //Add edge based on vertex indices
+			System.out.println("Test");
+			
+			for(int i=0; i<edgeWeight;i++)
+			{
+				s=reader.readLine();
+			}
+			tempValues.clear();
+		}
+		graph.getGraph().GetVertexData().AddArray(labels);
+		graph.getGraph().GetEdgeData().AddArray(weights);
+		return graph;
+	}
 }
 
 
