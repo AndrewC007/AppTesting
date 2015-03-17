@@ -2,6 +2,8 @@ import java.awt.BorderLayout;
 import java.awt.Desktop;
 import java.awt.EventQueue;
 import java.awt.MouseInfo;
+import java.awt.Desktop;
+import java.net.URI;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -58,13 +60,6 @@ import java.util.HashMap;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
-
-
-
-
-
-
-
 
 import vtk.*;
 
@@ -166,10 +161,12 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		setBounds(100, 100, 450, 300);
 		
 		JMenuBar menuBar = new JMenuBar();
+		menuBar.addMouseListener(this);
 		setJMenuBar(menuBar);
 		
 		JMenu mnFile = new JMenu("File");
 		menuBar.add(mnFile);
+		
 		
 		JMenu mnImportGraph = new JMenu("Import Graph");
 		mnFile.add(mnImportGraph);
@@ -211,6 +208,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		contentPane.setLayout(gbl_contentPane);
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.addMouseListener(this);
 		GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
 		gbc_tabbedPane.fill = GridBagConstraints.BOTH;
 		gbc_tabbedPane.gridx = 0;
@@ -358,6 +356,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		});
 		
 		textField = new JTextField();
+		textField.setEditable(false);
 		textField.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		textField.setColumns(10);
 		textField.setText(degreeCount + "");
@@ -397,6 +396,33 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		textField_1.setColumns(10);
 		
 		JButton btnSearch = new JButton("Search");
+		btnSearch.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				String textFieldGene = textField_1.getText();
+				String textFieldDegrees = textField.getText();
+				GraphInteract interactor = new GraphInteract();
+				GraphObserver obs = new GraphObserver();
+				obs.OriginalGraph();
+				
+				
+				//PSUEDO SELECT
+				if(Integer.parseInt(textFieldDegrees)==0)
+				{
+					interactor.selectNode(link, textFieldGene,new String("1"),graph.getGraph());
+					view.ResetCamera();
+					view.ZoomToSelection();
+					interactor.selectNode(link, textFieldGene,new String("0"),graph.getGraph());
+				}
+				//REGULAR SELECT
+				else if(Integer.parseInt(textFieldDegrees)>0)
+				{
+					interactor.selectNode(link, textFieldGene,textFieldDegrees,graph.getGraph());
+					view.ResetCamera();
+					view.ZoomToSelection();
+				}
+				view.Render();
+			}
+		});
 		btnSearch.setMinimumSize(new Dimension(83, 27));
 		GridBagConstraints gbc_btnSearch = new GridBagConstraints();
 		gbc_btnSearch.anchor = GridBagConstraints.NORTH;
@@ -405,10 +431,11 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		gbc_btnSearch.gridy = 6;
 		panel.add(btnSearch, gbc_btnSearch);
 		
-		JPanel panel_1 = new JPanel();
-		tabbedPane.addTab("Edge Information", null, panel_1, null);
+//		JPanel panel_1 = new JPanel();
+//		tabbedPane.addTab("Edge Information", null, panel_1, null);
 		
 		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.addMouseListener(this);
 		tabbedPane.addTab("Node Information", null, scrollPane, null);
 		
 		
@@ -417,45 +444,61 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
             @Override
             public void hyperlinkUpdate(HyperlinkEvent hle) {
                 if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType())) {
-                	
-                	xCoord= (int)MouseInfo.getPointerInfo().getLocation().getX();
-                	yCoord= (int)MouseInfo.getPointerInfo().getLocation().getY();
-                	
-                    JScrollPane popupPanel = new JScrollPane();
-            		JTextArea textArea = new JTextArea(20,30);
-            		textArea.setLineWrap(true);
-            		textArea.setWrapStyleWord(true);
-            		
-            		
-            		
-            		GraphInteract interactor = new GraphInteract();
-            		String infoTitle = interactor.articleParser(hle.getURL(), "Title");
-            		
-                    String info = interactor.articleParser(hle.getURL(), "Abstract");
-            		textArea.setText("Title: \n" + infoTitle + "\n\n" + "Abstract: \n" +info);
-            		
-            		popupPanel.setViewportView(textArea);
-            		textArea.setCaretPosition(0);
-            		PopupFactory popupFactory = new PopupFactory();
-            		
-            		Dimension dimension = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-            		
-            		if(xCoord>=(dimension.getWidth()-textArea.getPreferredSize().getWidth())){
-            			xCoord=xCoord - (int)textArea.getPreferredSize().getWidth();
-            		}
-            		if((yCoord+textArea.getPreferredSize().getHeight())>=dimension.getHeight()){
-            			yCoord=yCoord - (int)textArea.getPreferredSize().getHeight();
-            		}
-            		popup = popupFactory.getPopup(null, popupPanel, xCoord,yCoord);
-            		System.out.println("Location: " +MouseInfo.getPointerInfo().getLocation().getX() + " " + MouseInfo.getPointerInfo().getLocation().getY());
-            		System.out.println("Screen Size: " + dimension.getWidth() + " " + dimension.getHeight());
-            		System.out.println("Preferred Size: " + textArea.getPreferredSize().getWidth() + " " + textArea.getPreferredSize().getHeight());
-            		System.out.println("Calculated Location: " + xCoord + " " + yCoord);
-            		popup.show();
+                	if(hle.getURL().toString().length() > new String("http://www.ncbi.nlm.nih.gov/pubmed/123456789123456789").length())
+                	{
+	                	xCoord= (int)MouseInfo.getPointerInfo().getLocation().getX();
+	                	yCoord= (int)MouseInfo.getPointerInfo().getLocation().getY();
+	                	
+	                    JScrollPane popupPanel = new JScrollPane();
+	            		JTextArea textArea = new JTextArea(20,30);
+	            		textArea.setLineWrap(true);
+	            		textArea.setWrapStyleWord(true);
+	            		
+	            		
+	            		
+	            		GraphInteract interactor = new GraphInteract();
+	            		String infoTitle = interactor.articleParser(hle.getURL(), "Title");
+	            		
+	                    String info = interactor.articleParser(hle.getURL(), "Abstract");
+	            		textArea.setText("Title: \n" + infoTitle + "\n\n" + "Abstract: \n" +info);
+	            		
+	            		popupPanel.setViewportView(textArea);
+	            		textArea.setCaretPosition(0);
+	            		PopupFactory popupFactory = new PopupFactory();
+	            		
+	            		Dimension dimension = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+	            		
+	            		if(xCoord>=(dimension.getWidth()-textArea.getPreferredSize().getWidth())){
+	            			xCoord=xCoord - (int)textArea.getPreferredSize().getWidth();
+	            		}
+	            		if((yCoord+textArea.getPreferredSize().getHeight())>=dimension.getHeight()){
+	            			yCoord=yCoord - (int)textArea.getPreferredSize().getHeight();
+	            		}
+	            		popup = popupFactory.getPopup(null, popupPanel, xCoord,yCoord);
+	            		System.out.println("Location: " +MouseInfo.getPointerInfo().getLocation().getX() + " " + MouseInfo.getPointerInfo().getLocation().getY());
+	            		System.out.println("Screen Size: " + dimension.getWidth() + " " + dimension.getHeight());
+	            		System.out.println("Preferred Size: " + textArea.getPreferredSize().getWidth() + " " + textArea.getPreferredSize().getHeight());
+	            		System.out.println("Calculated Location: " + xCoord + " " + yCoord);
+	            		popup.show();
+                	}
+                	else
+                	{
+                		try{
+	                		if(Desktop.isDesktopSupported())
+	                		{
+	                			Desktop.getDesktop().browse(new URI(hle.getURL().toString()));
+	                		}
+                		}
+                		catch(Exception uriExc)
+                		{
+                			System.out.println(uriExc.getMessage());
+                		}
+                	}
                 }
             }
         });
 		editorPane.addMouseListener(this);
+		contentPane.addMouseListener(this);
 		scrollPane.setViewportView(editorPane);
 	}
 

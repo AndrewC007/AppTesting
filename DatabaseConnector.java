@@ -208,7 +208,7 @@ public class DatabaseConnector
 			s += "<br>";
 			s+="<pre>";
 			s+="<u>";
-			s += String.format("%-20s%-30s%-40s%-40s%-20s", "Gene", "Experimental System", "Experimental System Type", "Author","Link");
+			s += String.format("%-20s%-30s%-40s%-40s%-20s%-20s", "Gene", "Experimental System", "Experimental System Type", "Author","Abstract/Title","Link");
 			s+="</u>";
 			s+="</pre>";
 			s += "<br>";
@@ -234,7 +234,9 @@ public class DatabaseConnector
 					{
 						s+="<pre>";
 						s += String.format("%-20s%-30s%-40s%-40s", geneNames.GetValue(edge.GetTarget()), system.get(i), systemType.get(i),author.get(i));
-						s += "<a href='" + "http://www.ebi.ac.uk/europepmc/webservices/rest/search/resulttype=core&query=ext_id:"+pubMedID.get(i) + "'>Link</a>";
+						s += "<a href='" + "http://www.ebi.ac.uk/europepmc/webservices/rest/search/resulttype=core&query=ext_id:"+pubMedID.get(i) + "'>Abstract/Title</a>";
+						s+="      ";
+						s += "<a href='" + "http://www.ncbi.nlm.nih.gov/pubmed/"+pubMedID.get(i) + "'>Link</a>";
 						s+="</pre>";
 					}
 				}
@@ -248,7 +250,9 @@ public class DatabaseConnector
 					{
 						s+="<pre>";
 						s += String.format("%-20s%-30s%-40s%-40s", geneNames.GetValue(edge.GetSource()), system.get(i), systemType.get(i),author.get(i));
-						s += "<a href='" + "http://www.ebi.ac.uk/europepmc/webservices/rest/search/resulttype=core&query=ext_id:"+pubMedID.get(i) + "'>Link</a>";
+						s += "<a href='" + "http://www.ebi.ac.uk/europepmc/webservices/rest/search/resulttype=core&query=ext_id:"+pubMedID.get(i) + "'>Abstract/Title</a>";
+						s+="      ";
+						s += "<a href='" + "http://www.ncbi.nlm.nih.gov/pubmed/"+pubMedID.get(i) + "'>Link</a>";
 						s+="</pre>";
 					}
 				}
