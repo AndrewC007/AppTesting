@@ -55,7 +55,7 @@ public class GraphInteract {
 		
 	}
 	
-	//GENE SEARCH WITH DEGREES OF INTERACTION (USES AN EXTERNAL FUNCTION CREATED IN A SEPERATE CLASS)(Seperate class created
+	//GENE SEARCH WITH DEGREES OF INTERACTION (USES AN EXTERNAL FUNCTION CREATED IN A SEPERATE CLASS)(Separate class created
 	//for simplicity of merging the code
 	public void selectNode(vtkAnnotationLink link, String gene, String degrees,vtkMutableUndirectedGraph graph)
 	{

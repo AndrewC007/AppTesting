@@ -63,8 +63,12 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 
 import vtk.*;
 
-public class AppTesting extends JFrame implements ActionListener,MouseListener{
-	//GUI
+public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	//GUI Declaration
 	private JPanel contentPane;
 	private JTextField textField;
 	private JTextField textField_1;
@@ -74,11 +78,22 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	private JMenuItem mntmImportCustomGraph;
 	private JMenuItem mntmExportGraph;
 	
+	
+	//For Find Shortest Path
+	int vertex_ID=0;
+	int vertex_ID2=0;
+	
+	
+	
+
+	
+	//Graph Implementation
 	 vtkGraphLayoutView view;
 	 vtkRenderWindowPanel renderer = new vtkRenderWindowPanel();
 	 vtkRenderedGraphRepresentation rep = new vtkRenderedGraphRepresentation();
      vtkGraphLayout graphLayout = new vtkGraphLayout();
      ExtendedGraph graph = new ExtendedGraph();
+     ExtendedGraph origGraph = new ExtendedGraph();
      ExtendedGraph extractedGraph = new ExtendedGraph();
      vtkAnnotationLink link = new vtkAnnotationLink();
      vtkDataRepresentation dataRep = new vtkDataRepresentation();
@@ -99,7 +114,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		AppTesting test = new AppTesting();
+		AppTesting2 test = new AppTesting2();
 		test.setVisible(true);
 	}
 
@@ -110,27 +125,26 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	public void InitializeRenderer(ExtendedGraph graphTemp)
 	{
 		System.out.println("Rendering");
-		this.graph=graphTemp;
-		
-		
-		//TESTING
-//		System.out.println("LABELS2:");
-//		vtkIntArray labelsTest = (vtkIntArray) graphTemp.getGraph().GetVertexData().GetAbstractArray("labels");
-//		for(int i=0;i<labelsTest.GetSize();i++)
-//			System.out.println(labelsTest.GetValue(i));
+		this.origGraph=graphTemp;
+//		this.extractedGraph =graph;
+//		this.origGraph = graphTemp;
 		
 		
 		
+		//Theme
+	    vtkViewTheme t = new vtkViewTheme();
+	    vtkViewTheme theme = t.CreateNeonTheme();
+	    theme.SetBackgroundColor(0, 0, 0);
+	    theme.SetBackgroundColor2(0, 0, 0);
 		
         view=new vtkGraphLayoutView();
         this.view.SetRenderWindow(this.renderer.GetRenderWindow());
-    //  this.view.ColorVerticesOn();
-   //   this.view.DisplayHoverTextOn();
         this.view.SetLayoutStrategyToSimple2D();
         this.view.SetVertexLabelVisibility(true);
         this.view.SetVertexLabelArrayName("labels");
-        this.view.AddRepresentationFromInput(this.graph.getGraph());
+        this.view.AddRepresentationFromInput(this.origGraph.getGraph());
         this.view.SetEnableVerticesByArray(Boolean.TRUE);
+        this.view.ApplyViewTheme(theme);
         this.view.ResetCamera();
         
   
@@ -151,11 +165,17 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		panel.add(renderer, gbc_panel_2);
 		
 		//Import Export Action Listener
-		fileExchanger.UpdateGraph(graph);
+		fileExchanger.UpdateGraph(origGraph);
 	}
 	
 	
-	public AppTesting() {
+	public AppTesting2() {
+		//Theme
+	    vtkViewTheme t = new vtkViewTheme();
+	    final vtkViewTheme theme = t.CreateNeonTheme();
+	    theme.SetBackgroundColor(0, 0, 0);
+	    theme.SetBackgroundColor2(0, 0, 0);
+	    
         setExtendedState(Frame.MAXIMIZED_BOTH);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
@@ -197,7 +217,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		mnImportGraph.add(importGeneGraph);
 		
 		contentPane = new JPanel();
-		contentPane.setBackground(Color.DARK_GRAY);
+		contentPane.setBackground(Color.BLACK);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
@@ -216,7 +236,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		contentPane.add(tabbedPane, gbc_tabbedPane);
 		
 		panel = new JPanel();
-		panel.setBackground(Color.DARK_GRAY);
+		panel.setBackground(Color.BLACK);
 		tabbedPane.addTab("Graph View", null, panel, null);
 		GridBagLayout gbl_panel = new GridBagLayout();
 		gbl_panel.columnWidths = new int[]{780, 84, 164, 168, 0};
@@ -244,15 +264,31 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		gbc_lblNewLabel.gridy = 0;
 		panel.add(lblNewLabel, gbc_lblNewLabel);
 		
+		//Circular View Button
 		JButton btnCircular = new JButton("Circular");
 		btnCircular.setMinimumSize(new Dimension(83, 23));
+		btnCircular.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				view.SetLayoutStrategyToCircular();
+				view.ResetCamera();
+				renderer.Render();
+			}
+		});
 		GridBagConstraints gbc_btnCircular = new GridBagConstraints();
 		gbc_btnCircular.insets = new Insets(0, 0, 5, 0);
 		gbc_btnCircular.gridx = 3;
 		gbc_btnCircular.gridy = 1;
 		panel.add(btnCircular, gbc_btnCircular);
 		
-		JButton btnSimpled = new JButton("Simple 2-D");
+		//Simple2D Button
+		JButton btnSimpled = new JButton("Simple 2D");
+		btnSimpled.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				view.SetLayoutStrategyToSimple2D();
+				view.ResetCamera();
+				renderer.Render();
+			}
+		});
 		GridBagConstraints gbc_btnSimpled = new GridBagConstraints();
 		gbc_btnSimpled.insets = new Insets(0, 0, 5, 0);
 		gbc_btnSimpled.gridx = 3;
@@ -269,7 +305,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		panel.add(lblGraphInteractions, gbc_lblGraphInteractions);
 		
 		JPanel panel_4 = new JPanel();
-		panel_4.setBackground(Color.DARK_GRAY);
+		panel_4.setBackground(Color.BLACK);
 		GridBagConstraints gbc_panel_4 = new GridBagConstraints();
 		gbc_panel_4.insets = new Insets(0, 0, 5, 0);
 		gbc_panel_4.fill = GridBagConstraints.BOTH;
@@ -277,13 +313,70 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		gbc_panel_4.gridy = 4;
 		panel.add(panel_4, gbc_panel_4);
 		
+		
+		//SHORTEST PATH!!
 		JButton btnFindShortestPath = new JButton("Find Shortest Path");
+		btnFindShortestPath.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				
+				if(vertices.GetNumberOfTuples()==2){
+					GraphPath gpath=new GraphPath();
+					System.out.println("Vertices: " + vertices.GetValue(0) + " " + vertices.GetValue(1));
+					//Used to be extended graph
+					
+					vtkIdTypeArray vertex_path;
+					if(original==true)
+						vertex_path=gpath.FindPath(vertices.GetValue(0), vertices.GetValue(1), origGraph.getGraph());
+					else
+						vertex_path=gpath.FindPath(vertices.GetValue(0), vertices.GetValue(1), extractedGraph.getGraph());
+					
+					//Find the Edges Between The Nodes
+					//Used to be extended graph
+					
+					vtkIdTypeArray edgearray;
+					if(original==true)
+						edgearray=gpath.FindEdges(vertex_path, origGraph.getGraph());
+					else
+						edgearray=gpath.FindEdges(vertex_path, extractedGraph.getGraph());
+									
+					//Get The Selection Object				
+					vtkSelection sel=new vtkSelection();
+					sel=gpath.GetSelection(vertex_path, edgearray);
+				    link.SetCurrentSelection(sel);
+					link.Update();
+					view.ZoomToSelection();
+					view.ApplyViewTheme(theme);
+					view.Render();
+					
+				}
+			};
+		});
 		
 		JButton btnLoadUnfilteredGraph = new JButton("Load Unfiltered Graph");
+		btnLoadUnfilteredGraph.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				GraphObserver obs = new GraphObserver();
+				obs.OriginalGraph();
+				view.ApplyViewTheme(theme);
+				view.ResetCamera();
+				renderer.Render();
+			}
+		});
 		
 		JButton btnFilterSelection = new JButton("Filter Selection");
+		btnFilterSelection.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				GraphObserver obs = new GraphObserver();
+				obs.Exctraction();
+				view.ApplyViewTheme(theme);
+				view.ResetCamera();
+				renderer.Render();
+				
+			}
+		});
 		
 		JButton btnClearSelection = new JButton("Clear Selection");
+		
 		GroupLayout gl_panel_4 = new GroupLayout(panel_4);
 		gl_panel_4.setHorizontalGroup(
 			gl_panel_4.createParallelGroup(Alignment.TRAILING)
@@ -329,7 +422,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		panel.add(lblGeneName, gbc_lblGeneName);
 		
 		JPanel panel_3 = new JPanel();
-		panel_3.setBackground(Color.DARK_GRAY);
+		panel_3.setBackground(Color.BLACK);
 		GridBagConstraints gbc_panel_3 = new GridBagConstraints();
 		gbc_panel_3.insets = new Insets(0, 0, 0, 5);
 		gbc_panel_3.fill = GridBagConstraints.BOTH;
@@ -401,24 +494,49 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 				String textFieldGene = textField_1.getText();
 				String textFieldDegrees = textField.getText();
 				GraphInteract interactor = new GraphInteract();
-				GraphObserver obs = new GraphObserver();
-				obs.OriginalGraph();
+//				GraphObserver obs = new GraphObserver();
+//				obs.OriginalGraph();
 				
 				
 				//PSUEDO SELECT
 				if(Integer.parseInt(textFieldDegrees)==0)
 				{
-					interactor.selectNode(link, textFieldGene,new String("1"),graph.getGraph());
-					view.ResetCamera();
-					view.ZoomToSelection();
-					interactor.selectNode(link, textFieldGene,new String("0"),graph.getGraph());
+					if(original==true)
+					{
+						System.out.println("PSEUDO NON-EXTRACTED");
+						interactor.selectNode(link, textFieldGene,new String("1"),origGraph.getGraph());
+						view.ResetCamera();
+						view.ZoomToSelection();
+						view.ApplyViewTheme(theme);
+						interactor.selectNode(link, textFieldGene,new String("0"),origGraph.getGraph());
+					}
+					else 
+					{
+						System.out.println("PSEUDO EXTRACTED");
+						interactor.selectNode(link, textFieldGene,new String("1"),extractedGraph.getGraph());
+						view.ResetCamera();
+						view.ZoomToSelection();
+						view.ApplyViewTheme(theme);
+						interactor.selectNode(link, textFieldGene,new String("0"),extractedGraph.getGraph());
+					}
 				}
 				//REGULAR SELECT
 				else if(Integer.parseInt(textFieldDegrees)>0)
 				{
-					interactor.selectNode(link, textFieldGene,textFieldDegrees,graph.getGraph());
-					view.ResetCamera();
-					view.ZoomToSelection();
+					if(original==true)
+					{
+						interactor.selectNode(link, textFieldGene,textFieldDegrees,origGraph.getGraph());
+						view.ResetCamera();
+						view.ZoomToSelection();
+						view.ApplyViewTheme(theme);
+					}
+					else 
+					{
+						interactor.selectNode(link, textFieldGene,textFieldDegrees,extractedGraph.getGraph());
+						view.ResetCamera();
+						view.ZoomToSelection();
+						view.ApplyViewTheme(theme);
+					}
 				}
 				view.Render();
 			}
@@ -506,9 +624,9 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	private class GraphObserver{
 		void OriginalGraph(){
 			original=true;
-			extractedGraph=null;
+		//	extractedGraph = null;
 			view.RemoveAllRepresentations();
-			view.AddRepresentationFromInput(graph.getGraph());
+			view.AddRepresentationFromInput(origGraph.getGraph());
 			dataRep = view.GetRepresentation(0);
 			
 			link.RemoveAllObservers();
@@ -527,13 +645,21 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 			GraphInteract graphInteractor = new GraphInteract();
 			if(vertices.GetNumberOfTuples()>1 && original==true)
 			{
+				System.out.println("Original Extract");
 				original=false;
 //				rep = view.GetRepresentation(0);
 //				
 //				link = rep.GetAnnotationLink();
 //				link.AddObserver("AnnotationChangedEvent", this,  "selectionCallback");
 //               
-				extractedGraph.setGraph(graphInteractor.extract(vertices,graph.getGraph()));
+
+				//Assign values to nex object
+				extractedGraph.setGraph(graphInteractor.extract(vertices,origGraph.getGraph()));
+				extractedGraph.setAuthor(origGraph.getAuthor());
+				extractedGraph.setPubMedID(origGraph.getPubMedID());
+				extractedGraph.setSystem(origGraph.getSystem());
+				extractedGraph.setSystemType(origGraph.getSystemType());
+				
 				view.RemoveAllRepresentations();
 				view.AddRepresentationFromInput(extractedGraph.getGraph());
 				
@@ -551,13 +677,22 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 			}
 			else if(vertices.GetNumberOfTuples()>1  && original==false)
 			{
+				System.out.println("Extracted Extract");
 				original=false;
 //				rep = view.GetRepresentation(0);
 //				
 //				link = rep.GetAnnotationLink();
 //				link.AddObserver("AnnotationChangedEvent", this,  "selectionCallback");
 //				
+				
+				//Set values for object
 				extractedGraph.setGraph(graphInteractor.extract(vertices,extractedGraph.getGraph()));
+				extractedGraph.setAuthor(extractedGraph.getAuthor());
+				extractedGraph.setPubMedID(extractedGraph.getPubMedID());
+				extractedGraph.setSystem(extractedGraph.getSystem());
+				extractedGraph.setSystemType(extractedGraph.getSystemType());
+				
+				
 				view.RemoveAllRepresentations();
 				view.AddRepresentationFromInput(extractedGraph.getGraph());
 				
@@ -597,7 +732,11 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 			DatabaseConnector connect = new DatabaseConnector();
 			if(vertices.GetNumberOfTuples() ==1  && original==true)
 			{
-				connect.getGeneInfo(graph, vertices.GetValue(0),editorPane);
+				connect.getGeneInfo(origGraph, vertices.GetValue(0),editorPane);
+			}
+			else if(vertices.GetNumberOfTuples() ==1  && original==false)
+			{
+				connect.getGeneInfo(extractedGraph, vertices.GetValue(0),editorPane);
 			}
 //			if (vertices.GetNumberOfTuples() > 0) {
 //				if(vertices.GetNumberOfTuples() ==1  && original==true)
@@ -634,6 +773,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 						
 					CreateGraph graphCreator = new CreateGraph(taxID,NameToTaxID);
 					graphTemp=graphCreator.createMutableGraphURL();
+					this.InitializeRenderer(graphTemp);
 				}
 				else if(e.getSource()==importGeneGraph)
 				{
@@ -641,8 +781,8 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 							"Please enter the gene name:");
 					CreateGraph graphCreator = new CreateGraph(geneName,NameToTaxID);
 					graphTemp=graphCreator.createMutableGraphURL();
+					this.InitializeRenderer(graphTemp);
 				}
-				this.InitializeRenderer(graphTemp);
 				this.renderer.Render();
 				this.view.GetInteractor().Start();
 			}
@@ -650,6 +790,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 				System.out.println(exc.getMessage());
 			}
 	}
+
 	
 	public void PopupShow()
 	{

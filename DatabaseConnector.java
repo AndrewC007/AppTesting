@@ -105,7 +105,7 @@ public class DatabaseConnector
 			return organismList;
 		
 		}
-		
+		//Database DRIVEN, NOT USED
 		public void getGeneInfo(vtkMutableUndirectedGraph graph, int gene,String organism, JEditorPane editorPane)
 		{
 			vtkStringArray geneNames = (vtkStringArray) graph.GetVertexData().GetAbstractArray("labels");
@@ -183,6 +183,7 @@ public class DatabaseConnector
 			//Relevant arrays needed to reference
 			vtkStringArray geneNames = (vtkStringArray) graph.getGraph().GetVertexData().GetAbstractArray("labels");
 			vtkIntArray edgeWeights = (vtkIntArray) graph.getGraph().GetEdgeData().GetAbstractArray("weights");
+		//	vtkStringArray organismNames = (vtkStringArray)
 			
 			//Temp arrays to print edge data
 			ArrayList<String> author= new ArrayList<String>();
@@ -203,6 +204,8 @@ public class DatabaseConnector
 			s+="<pre>";
 			s+="<b>";
 			s += String.format("%55s",geneNames.GetValue(gene));
+		//	s += "    Organism: ";
+			//s += 
 			s+="</b>";
 			s+="</pre>";
 			s += "<br>";
@@ -220,17 +223,25 @@ public class DatabaseConnector
 			int edgeCount=0;
 			vtkGraphEdge edge;
 			
+//			while(iterator.HasNext())
+//			{
+//				edge=iterator.NextGraphEdge();
+//				System.out.println(edgeCount + ". " +geneNames.GetValue(edge.GetSource()) + " " + geneNames.GetValue(edge.GetTarget()) + " " + edgeWeights.GetValue(edge.GetId()));
+//				edgeCount++;
+//			}
+			
 			while(iterator.HasNext())
 			{
 				edge=iterator.NextGraphEdge();
 				if(geneNames.GetValue(edge.GetSource()).equals(geneNames.GetValue(gene)))
 				{
-					author=graph.getAuthor().get(edgeCount);
-					system=graph.getSystem().get(edgeCount);
-					systemType=graph.getSystemType().get(edgeCount);
-					pubMedID=graph.getPubMedID().get(edgeCount);
-					System.out.println(system.get(0));
-					for(int i=0;i<edgeWeights.GetValue(edgeCount);i++)
+					author=graph.getAuthor().get(edge.GetId());
+					system=graph.getSystem().get(edge.GetId());
+					systemType=graph.getSystemType().get(edge.GetId());
+					pubMedID=graph.getPubMedID().get(edge.GetId());
+					
+					System.out.println("EDGE COUNT:" + edgeWeights.GetValue(edge.GetId()));
+					for(int i=0;i<edgeWeights.GetValue(edge.GetId());i++)
 					{
 						s+="<pre>";
 						s += String.format("%-20s%-30s%-40s%-40s", geneNames.GetValue(edge.GetTarget()), system.get(i), systemType.get(i),author.get(i));
@@ -242,11 +253,13 @@ public class DatabaseConnector
 				}
 				else if(geneNames.GetValue(edge.GetTarget()).equals(geneNames.GetValue(gene)))
 				{
-					author=graph.getAuthor().get(edgeCount);
-					system=graph.getSystem().get(edgeCount);
-					systemType=graph.getSystemType().get(edgeCount);
-					pubMedID=graph.getPubMedID().get(edgeCount);
-					for(int i=0;i<edgeWeights.GetValue(edgeCount);i++)
+					author=graph.getAuthor().get(edge.GetId());
+					system=graph.getSystem().get(edge.GetId());
+					systemType=graph.getSystemType().get(edge.GetId());
+					pubMedID=graph.getPubMedID().get(edge.GetId());
+					
+					System.out.println("EDGE COUNT:" + edgeWeights.GetValue(edge.GetId()));
+					for(int i=0;i<edgeWeights.GetValue(edge.GetId());i++)
 					{
 						s+="<pre>";
 						s += String.format("%-20s%-30s%-40s%-40s", geneNames.GetValue(edge.GetSource()), system.get(i), systemType.get(i),author.get(i));
@@ -256,6 +269,7 @@ public class DatabaseConnector
 						s+="</pre>";
 					}
 				}
+				
 			}
 			
 			try {

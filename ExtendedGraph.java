@@ -3,7 +3,7 @@ import java.util.List;
 
 import vtk.*;
 
-public class ExtendedGraph {
+public class ExtendedGraph extends vtkMutableUndirectedGraph {
 	private vtkMutableUndirectedGraph graph;
 	private ArrayList<ArrayList> author;
 	private ArrayList<ArrayList> systemType;

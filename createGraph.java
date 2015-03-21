@@ -37,7 +37,7 @@ public class CreateGraph {
 		try{
 		Class.forName("com.mysql.jdbc.Driver");
 		//Information should be the same; "EDP" should be changed to password of user you are using on your system
-		con = DriverManager.getConnection("jdbc:mysql://localhost:3306/organism","root","EDP");
+		con = DriverManager.getConnection("jdbc:mysql://localhost:3306/organism","root","Edp1234");
 		//Create MySQL query statement
 		}
 		catch(Exception e)
@@ -352,7 +352,11 @@ public class CreateGraph {
 					}
 					else
 					{
+						
 						edgeWeights.add(indexOfValues,edgeWeights.get(indexOfValues)+1);
+						System.out.println("INDEX VALUE: " + indexOfValues);
+						System.out.println("Genes: " + tempValues.get(7) + " " + tempValues.get(8));
+						System.out.println("EDGE WEIGHT TRACKER:" + edgeWeights.get(indexOfValues));
 						pubMedID.get(indexOfValues).add(tempValues.get(14));
 						author.get(indexOfValues).add(tempValues.get(13));
 						experimentalSystem.get(indexOfValues).add(tempValues.get(11));
@@ -379,6 +383,7 @@ public class CreateGraph {
 //					System.out.println(genesSortedvtk.GetValue(i));
 				
 				testing.getGraph().GetVertexData().AddArray(labels);
+				testing.getGraph().GetVertexData().AddArray(organisms);
 				//testing.getGraph().GetVertexData().AddArray(organismVtk);
 
 

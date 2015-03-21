@@ -19,9 +19,9 @@ public class FileImportExport implements ActionListener {
 	ExtendedGraph graph;
 	File selectedFile;
 	JPanel contentPane;
-	AppTesting appTest;
+	AppTesting2 appTest;
 	
-	public FileImportExport(JPanel contentPane,JMenuItem importButton, JMenuItem exportButton,ExtendedGraph graph,AppTesting appTest)
+	public FileImportExport(JPanel contentPane,JMenuItem importButton, JMenuItem exportButton,ExtendedGraph graph,AppTesting2 appTest)
 	{
 		this.importButton=importButton;
 		this.exportButton=exportButton;
