@@ -302,7 +302,7 @@ public class CreateGraph {
 				geneNames.toArray(genes);
 				geneNames.clear();
 				
-				Arrays.sort(genes,String.CASE_INSENSITIVE_ORDER);
+			//	Arrays.sort(genes,String.CASE_INSENSITIVE_ORDER);
 				List<String> gene1 = new ArrayList<String>(); //parallel arrays to represent edges
 				List<String> gene2 = new ArrayList<String>();
 				List<Integer> edgeWeights = new ArrayList<Integer>();
@@ -346,17 +346,18 @@ public class CreateGraph {
 						experimentalSystemType.add(new ArrayList());
 						experimentalSystemType.get(currentEdge).add(tempValues.get(12));
 						
-					//	System.out.println("Test");
+						System.out.println("Edges Count: " + currentEdge + " " + tempValues.get(7) + " " +tempValues.get(8));
 						testing.getGraph().AddGraphEdge(v[sortedGenes.indexOf(tempValues.get(7))], v[sortedGenes.indexOf(tempValues.get(8))]);
 						currentEdge++;
 					}
 					else
 					{
+						System.out.println("Index of Values: " +indexOfValues);
+						edgeWeights.set(indexOfValues,edgeWeights.get(indexOfValues)+1);
 						
-						edgeWeights.add(indexOfValues,edgeWeights.get(indexOfValues)+1);
-						System.out.println("INDEX VALUE: " + indexOfValues);
-						System.out.println("Genes: " + tempValues.get(7) + " " + tempValues.get(8));
-						System.out.println("EDGE WEIGHT TRACKER:" + edgeWeights.get(indexOfValues));
+						System.out.println("Genes: " + tempValues.get(7) + " "  + tempValues.get(8));
+						System.out.println("EDGES CHECK: " + edgeWeights.get(indexOfValues));
+						
 						pubMedID.get(indexOfValues).add(tempValues.get(14));
 						author.get(indexOfValues).add(tempValues.get(13));
 						experimentalSystem.get(indexOfValues).add(tempValues.get(11));
@@ -378,7 +379,6 @@ public class CreateGraph {
 					organisms.InsertNextValue(organismNames.get(i));
 				}
 				
-				System.out.println(labels.GetSize());
 //				for(int i=0;i<genesSortedvtk.GetSize();i++)
 //					System.out.println(genesSortedvtk.GetValue(i));
 				
@@ -391,8 +391,10 @@ public class CreateGraph {
 				weights.SetNumberOfComponents(1);
 				weights.SetName("weights");
 				
+				System.out.println("Size of Edges: " + edgeWeights.size());
 				for(int i=0; i<edgeWeights.size();i++)
 				{
+					System.out.println(edgeWeights.get(i));
 					weights.InsertNextValue(edgeWeights.get(i));
 				}
 				
