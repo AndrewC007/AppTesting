@@ -106,6 +106,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
      FileImportExport fileExchanger; //Used for importing and exporting files
      JMenuItem mntmImportBiogridInteractions; //menu for default biogrid graph creation
      JMenuItem importGeneGraph;
+     JTabbedPane tabbedPane;
      
      int xCoord;
      int yCoord;
@@ -162,7 +163,16 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 		gbc_panel_2.fill = GridBagConstraints.BOTH;
 		gbc_panel_2.gridx = 0;
 		gbc_panel_2.gridy = 0;
+		
+		if(renderer.getParent()!=null)
+			System.out.println("Removed");
+			panel.remove(renderer);
+		
 		panel.add(renderer, gbc_panel_2);
+		
+		//Used to fix dropdown menu showing behind the render window
+		tabbedPane.setSelectedIndex(1);
+		tabbedPane.setSelectedIndex(0);
 		
 		//Import Export Action Listener
 		fileExchanger.UpdateGraph(origGraph);
@@ -227,7 +237,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 		gbl_contentPane.rowWeights = new double[]{1.0, Double.MIN_VALUE};
 		contentPane.setLayout(gbl_contentPane);
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.addMouseListener(this);
 		GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
 		gbc_tabbedPane.fill = GridBagConstraints.BOTH;
@@ -272,6 +282,10 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 				view.SetLayoutStrategyToCircular();
 				view.ResetCamera();
 				renderer.Render();
+				
+				//Used to fix dropdown menu showing behind the render window
+				tabbedPane.setSelectedIndex(1);
+				tabbedPane.setSelectedIndex(0);
 			}
 		});
 		GridBagConstraints gbc_btnCircular = new GridBagConstraints();
@@ -287,6 +301,10 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 				view.SetLayoutStrategyToSimple2D();
 				view.ResetCamera();
 				renderer.Render();
+				
+				//Used to fix dropdown menu showing behind the render window
+				tabbedPane.setSelectedIndex(1);
+				tabbedPane.setSelectedIndex(0);
 			}
 		});
 		GridBagConstraints gbc_btnSimpled = new GridBagConstraints();
@@ -348,6 +366,9 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 					view.ApplyViewTheme(theme);
 					view.Render();
 					
+					//Used to fix dropdown menu showing behind the render window
+					tabbedPane.setSelectedIndex(1);
+					tabbedPane.setSelectedIndex(0);
 				}
 			};
 		});
@@ -360,6 +381,10 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 				view.ApplyViewTheme(theme);
 				view.ResetCamera();
 				renderer.Render();
+				
+				//Used to fix dropdown menu showing behind the render window
+				tabbedPane.setSelectedIndex(1);
+				tabbedPane.setSelectedIndex(0);
 			}
 		});
 		
@@ -372,10 +397,14 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 				view.ResetCamera();
 				renderer.Render();
 				
+				//Used to fix dropdown menu showing behind the render window
+				tabbedPane.setSelectedIndex(1);
+				tabbedPane.setSelectedIndex(0);
+				
 			}
 		});
 		
-		JButton btnClearSelection = new JButton("Clear Selection");
+	//	JButton btnClearSelection = new JButton("Clear Selection");
 		
 		GroupLayout gl_panel_4 = new GroupLayout(panel_4);
 		gl_panel_4.setHorizontalGroup(
@@ -383,7 +412,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 				.addGroup(gl_panel_4.createSequentialGroup()
 					.addContainerGap(21, Short.MAX_VALUE)
 					.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
-						.addComponent(btnClearSelection)
+					//	.addComponent(btnClearSelection)
 						.addComponent(btnFindShortestPath)
 						.addComponent(btnFilterSelection)
 						.addComponent(btnLoadUnfilteredGraph))
@@ -398,7 +427,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 					.addGap(32)
 					.addComponent(btnFindShortestPath)
 					.addGap(32)
-					.addComponent(btnClearSelection)
+			//		.addComponent(btnClearSelection)
 					.addContainerGap(275, Short.MAX_VALUE))
 		);
 		panel_4.setLayout(gl_panel_4);
@@ -539,6 +568,10 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 					}
 				}
 				view.Render();
+				
+				//Used to fix dropdown menu showing behind the render window
+				tabbedPane.setSelectedIndex(1);
+				tabbedPane.setSelectedIndex(0);
 			}
 		});
 		btnSearch.setMinimumSize(new Dimension(83, 27));
@@ -638,6 +671,10 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 			view.SetLayoutStrategyToSimple2D();
 			view.ResetCamera();
 			renderer.Render();
+			
+			//Used to fix dropdown menu showing behind the render window
+			tabbedPane.setSelectedIndex(1);
+			tabbedPane.setSelectedIndex(0);
 		}
 		
 		
@@ -674,6 +711,10 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 			    view.SetLayoutStrategyToSimple2D();
 			    view.ResetCamera();
 				renderer.Render();
+				
+				//Used to fix dropdown menu showing behind the render window
+				tabbedPane.setSelectedIndex(1);
+				tabbedPane.setSelectedIndex(0);
 			}
 			else if(vertices.GetNumberOfTuples()>1  && original==false)
 			{
@@ -707,6 +748,10 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 			    view.SetLayoutStrategyToSimple2D();
 				view.ResetCamera();
 				renderer.Render();
+				
+				//Used to fix dropdown menu showing behind the render window
+				tabbedPane.setSelectedIndex(1);
+				tabbedPane.setSelectedIndex(0);
 			}
 		}
 		

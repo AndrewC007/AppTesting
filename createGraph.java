@@ -320,7 +320,6 @@ public class CreateGraph {
 				in= new InputStreamReader(urlConnect.getInputStream());
 				buffRead = new BufferedReader(in);
 				int currentEdge=0;
-				System.out.println("Start Indices:");
 				while((s=buffRead.readLine())!=null)
 				{
 					tempValues=tabRead.readLine(s);
@@ -346,17 +345,15 @@ public class CreateGraph {
 						experimentalSystemType.add(new ArrayList());
 						experimentalSystemType.get(currentEdge).add(tempValues.get(12));
 						
-						System.out.println("Edges Count: " + currentEdge + " " + tempValues.get(7) + " " +tempValues.get(8));
+					
 						testing.getGraph().AddGraphEdge(v[sortedGenes.indexOf(tempValues.get(7))], v[sortedGenes.indexOf(tempValues.get(8))]);
 						currentEdge++;
 					}
 					else
 					{
-						System.out.println("Index of Values: " +indexOfValues);
+				
 						edgeWeights.set(indexOfValues,edgeWeights.get(indexOfValues)+1);
 						
-						System.out.println("Genes: " + tempValues.get(7) + " "  + tempValues.get(8));
-						System.out.println("EDGES CHECK: " + edgeWeights.get(indexOfValues));
 						
 						pubMedID.get(indexOfValues).add(tempValues.get(14));
 						author.get(indexOfValues).add(tempValues.get(13));
@@ -391,7 +388,7 @@ public class CreateGraph {
 				weights.SetNumberOfComponents(1);
 				weights.SetName("weights");
 				
-				System.out.println("Size of Edges: " + edgeWeights.size());
+	
 				for(int i=0; i<edgeWeights.size();i++)
 				{
 					System.out.println(edgeWeights.get(i));
