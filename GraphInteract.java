@@ -14,7 +14,8 @@ public class GraphInteract {
 	
 	public String articleInfo;
 	
-	public void selectNode(vtkAnnotationLink link, String organism,vtkMutableUndirectedGraph graph)
+	//SINGLE GENE SEARCH WITHOUT DEGREES OF INTERACTION
+	public void selectNode(vtkAnnotationLink link, String gene,vtkMutableUndirectedGraph graph)
 	{
 		
 		try{
@@ -32,7 +33,7 @@ public class GraphInteract {
 			
 			for(int i=0; i<geneNames.GetNumberOfTuples();i++)
 			{
-				if(organism.equals(geneNames.GetValue(i)))
+				if(gene.equals(geneNames.GetValue(i)))
 				{
 					
 					vtkIdTypeArray temp= new vtkIdTypeArray();
@@ -50,6 +51,66 @@ public class GraphInteract {
 		{
 			System.out.println("Exception Thrown:");
 			System.out.println(e.getMessage());
+		}
+		
+	}
+	
+	//GENE SEARCH WITH DEGREES OF INTERACTION (USES AN EXTERNAL FUNCTION CREATED IN A SEPERATE CLASS)(Separate class created
+	//for simplicity of merging the code
+	public void selectNode(vtkAnnotationLink link, String gene, String degrees,vtkMutableUndirectedGraph graph)
+	{
+		if(Integer.parseInt(degrees)==0)
+		{
+			System.out.println("TEST 0");
+			try{
+				vtkSelection sel = new vtkSelection(); 
+				vtkSelectionNode node = new vtkSelectionNode(); //Vertex selectionNode
+				node.SetContentType(4);
+				node.SetFieldType(3);
+				
+				 // Required for SelectionCallback function to set the vertex selectionNode to node 1 in the selection
+				vtkSelectionNode emptyEdgeNode = new vtkSelectionNode(); 
+				
+				vtkStringArray geneNames = (vtkStringArray)graph.GetVertexData().GetAbstractArray("labels");
+		
+				
+				
+				for(int i=0; i<geneNames.GetNumberOfTuples();i++)
+				{
+					if(gene.equals(geneNames.GetValue(i)))
+					{
+						
+						vtkIdTypeArray temp= new vtkIdTypeArray();
+						temp.InsertNextValue(i);
+						
+						node.SetSelectionList(temp);
+						sel.AddNode(emptyEdgeNode);
+						sel.AddNode(node);
+						link.SetCurrentSelection(sel);
+						break;
+					}
+				}
+			}
+			catch(Exception e)
+			{
+				System.out.println("Exception Thrown:");
+				System.out.println(e.getMessage());
+			}
+		}
+		else if(Integer.parseInt(degrees)>=1)
+		{
+			System.out.println("TEST");
+			vtkStringArray geneNames = (vtkStringArray)graph.GetVertexData().GetAbstractArray("labels");
+			for(int i=0; i<geneNames.GetNumberOfTuples();i++)
+			{
+				if(gene.equals(geneNames.GetValue(i)))
+				{
+					InteractionDegrees.SelectDegrees(graph, Integer.parseInt(degrees), i, link);
+					break;
+					
+				}
+			}
+			
 		}
 		
 	}

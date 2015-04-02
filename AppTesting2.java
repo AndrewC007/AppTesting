@@ -2,6 +2,8 @@ import java.awt.BorderLayout;
 import java.awt.Desktop;
 import java.awt.EventQueue;
 import java.awt.MouseInfo;
+import java.awt.Desktop;
+import java.net.URI;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -52,20 +54,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
-
-
-
-
-
 import vtk.*;
 
-public class AppTesting extends JFrame implements ActionListener,MouseListener{
-	//GUI
+public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	//GUI Declaration
 	private JPanel contentPane;
 	private JTextField textField;
 	private JTextField textField_1;
@@ -75,11 +78,22 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	private JMenuItem mntmImportCustomGraph;
 	private JMenuItem mntmExportGraph;
 	
+	
+	//For Find Shortest Path
+	int vertex_ID=0;
+	int vertex_ID2=0;
+	
+	
+	
+
+	
+	//Graph Implementation
 	 vtkGraphLayoutView view;
 	 vtkRenderWindowPanel renderer = new vtkRenderWindowPanel();
 	 vtkRenderedGraphRepresentation rep = new vtkRenderedGraphRepresentation();
      vtkGraphLayout graphLayout = new vtkGraphLayout();
      ExtendedGraph graph = new ExtendedGraph();
+     ExtendedGraph origGraph = new ExtendedGraph();
      ExtendedGraph extractedGraph = new ExtendedGraph();
      vtkAnnotationLink link = new vtkAnnotationLink();
      vtkDataRepresentation dataRep = new vtkDataRepresentation();
@@ -90,6 +104,9 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
      JEditorPane editorPane = new JEditorPane();
      Popup popup;
      FileImportExport fileExchanger; //Used for importing and exporting files
+     JMenuItem mntmImportBiogridInteractions; //menu for default biogrid graph creation
+     JMenuItem importGeneGraph;
+     JTabbedPane tabbedPane;
      
      int xCoord;
      int yCoord;
@@ -98,7 +115,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		AppTesting test = new AppTesting();
+		AppTesting2 test = new AppTesting2();
 		test.setVisible(true);
 	}
 
@@ -109,17 +126,26 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	public void InitializeRenderer(ExtendedGraph graphTemp)
 	{
 		System.out.println("Rendering");
-		this.graph=graphTemp;
+		this.origGraph=graphTemp;
+//		this.extractedGraph =graph;
+//		this.origGraph = graphTemp;
+		
+		
+		
+		//Theme
+	    vtkViewTheme t = new vtkViewTheme();
+	    vtkViewTheme theme = t.CreateNeonTheme();
+	    theme.SetBackgroundColor(0, 0, 0);
+	    theme.SetBackgroundColor2(0, 0, 0);
 		
         view=new vtkGraphLayoutView();
         this.view.SetRenderWindow(this.renderer.GetRenderWindow());
-    //  this.view.ColorVerticesOn();
-   //   this.view.DisplayHoverTextOn();
         this.view.SetLayoutStrategyToSimple2D();
         this.view.SetVertexLabelVisibility(true);
         this.view.SetVertexLabelArrayName("labels");
-        this.view.AddRepresentationFromInput(this.graph.getGraph());
+        this.view.AddRepresentationFromInput(this.origGraph.getGraph());
         this.view.SetEnableVerticesByArray(Boolean.TRUE);
+        this.view.ApplyViewTheme(theme);
         this.view.ResetCamera();
         
   
@@ -137,23 +163,40 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		gbc_panel_2.fill = GridBagConstraints.BOTH;
 		gbc_panel_2.gridx = 0;
 		gbc_panel_2.gridy = 0;
+		
+		if(renderer.getParent()!=null)
+			System.out.println("Removed");
+			panel.remove(renderer);
+		
 		panel.add(renderer, gbc_panel_2);
 		
+		//Used to fix dropdown menu showing behind the render window
+		tabbedPane.setSelectedIndex(1);
+		tabbedPane.setSelectedIndex(0);
+		
 		//Import Export Action Listener
-		fileExchanger.UpdateGraph(graph);
+		fileExchanger.UpdateGraph(origGraph);
 	}
 	
 	
-	public AppTesting() {
+	public AppTesting2() {
+		//Theme
+	    vtkViewTheme t = new vtkViewTheme();
+	    final vtkViewTheme theme = t.CreateNeonTheme();
+	    theme.SetBackgroundColor(0, 0, 0);
+	    theme.SetBackgroundColor2(0, 0, 0);
+	    
         setExtendedState(Frame.MAXIMIZED_BOTH);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		
 		JMenuBar menuBar = new JMenuBar();
+		menuBar.addMouseListener(this);
 		setJMenuBar(menuBar);
 		
 		JMenu mnFile = new JMenu("File");
 		menuBar.add(mnFile);
+		
 		
 		JMenu mnImportGraph = new JMenu("Import Graph");
 		mnFile.add(mnImportGraph);
@@ -171,17 +214,20 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		mntmExportGraph.addActionListener(fileExchanger);
 		
 		//Add action listener to Import 
-		JMenuItem mntmImportBiogridInteractions = new JMenuItem("Import Default BioGRID Graph");
+		mntmImportBiogridInteractions = new JMenuItem("Import Default BioGRID Graph");
 		mntmImportBiogridInteractions.addActionListener(this);
+		
+		importGeneGraph = new JMenuItem("Import Gene Based Graph");
+		importGeneGraph.addActionListener(this);
 			
 		
 		
 		
 		mnImportGraph.add(mntmImportBiogridInteractions);
-		
+		mnImportGraph.add(importGeneGraph);
 		
 		contentPane = new JPanel();
-		contentPane.setBackground(Color.DARK_GRAY);
+		contentPane.setBackground(Color.BLACK);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
@@ -191,7 +237,8 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		gbl_contentPane.rowWeights = new double[]{1.0, Double.MIN_VALUE};
 		contentPane.setLayout(gbl_contentPane);
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.addMouseListener(this);
 		GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
 		gbc_tabbedPane.fill = GridBagConstraints.BOTH;
 		gbc_tabbedPane.gridx = 0;
@@ -199,7 +246,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		contentPane.add(tabbedPane, gbc_tabbedPane);
 		
 		panel = new JPanel();
-		panel.setBackground(Color.DARK_GRAY);
+		panel.setBackground(Color.BLACK);
 		tabbedPane.addTab("Graph View", null, panel, null);
 		GridBagLayout gbl_panel = new GridBagLayout();
 		gbl_panel.columnWidths = new int[]{780, 84, 164, 168, 0};
@@ -227,15 +274,39 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		gbc_lblNewLabel.gridy = 0;
 		panel.add(lblNewLabel, gbc_lblNewLabel);
 		
+		//Circular View Button
 		JButton btnCircular = new JButton("Circular");
 		btnCircular.setMinimumSize(new Dimension(83, 23));
+		btnCircular.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				view.SetLayoutStrategyToCircular();
+				view.ResetCamera();
+				renderer.Render();
+				
+				//Used to fix dropdown menu showing behind the render window
+				tabbedPane.setSelectedIndex(1);
+				tabbedPane.setSelectedIndex(0);
+			}
+		});
 		GridBagConstraints gbc_btnCircular = new GridBagConstraints();
 		gbc_btnCircular.insets = new Insets(0, 0, 5, 0);
 		gbc_btnCircular.gridx = 3;
 		gbc_btnCircular.gridy = 1;
 		panel.add(btnCircular, gbc_btnCircular);
 		
-		JButton btnSimpled = new JButton("Simple 2-D");
+		//Simple2D Button
+		JButton btnSimpled = new JButton("Simple 2D");
+		btnSimpled.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				view.SetLayoutStrategyToSimple2D();
+				view.ResetCamera();
+				renderer.Render();
+				
+				//Used to fix dropdown menu showing behind the render window
+				tabbedPane.setSelectedIndex(1);
+				tabbedPane.setSelectedIndex(0);
+			}
+		});
 		GridBagConstraints gbc_btnSimpled = new GridBagConstraints();
 		gbc_btnSimpled.insets = new Insets(0, 0, 5, 0);
 		gbc_btnSimpled.gridx = 3;
@@ -252,7 +323,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		panel.add(lblGraphInteractions, gbc_lblGraphInteractions);
 		
 		JPanel panel_4 = new JPanel();
-		panel_4.setBackground(Color.DARK_GRAY);
+		panel_4.setBackground(Color.BLACK);
 		GridBagConstraints gbc_panel_4 = new GridBagConstraints();
 		gbc_panel_4.insets = new Insets(0, 0, 5, 0);
 		gbc_panel_4.fill = GridBagConstraints.BOTH;
@@ -260,20 +331,88 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		gbc_panel_4.gridy = 4;
 		panel.add(panel_4, gbc_panel_4);
 		
+		
+		//SHORTEST PATH!!
 		JButton btnFindShortestPath = new JButton("Find Shortest Path");
+		btnFindShortestPath.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				
+				if(vertices.GetNumberOfTuples()==2){
+					GraphPath gpath=new GraphPath();
+					System.out.println("Vertices: " + vertices.GetValue(0) + " " + vertices.GetValue(1));
+					//Used to be extended graph
+					
+					vtkIdTypeArray vertex_path;
+					if(original==true)
+						vertex_path=gpath.FindPath(vertices.GetValue(0), vertices.GetValue(1), origGraph.getGraph());
+					else
+						vertex_path=gpath.FindPath(vertices.GetValue(0), vertices.GetValue(1), extractedGraph.getGraph());
+					
+					//Find the Edges Between The Nodes
+					//Used to be extended graph
+					
+					vtkIdTypeArray edgearray;
+					if(original==true)
+						edgearray=gpath.FindEdges(vertex_path, origGraph.getGraph());
+					else
+						edgearray=gpath.FindEdges(vertex_path, extractedGraph.getGraph());
+									
+					//Get The Selection Object				
+					vtkSelection sel=new vtkSelection();
+					sel=gpath.GetSelection(vertex_path, edgearray);
+				    link.SetCurrentSelection(sel);
+					link.Update();
+					view.ZoomToSelection();
+					view.ApplyViewTheme(theme);
+					view.Render();
+					
+					//Used to fix dropdown menu showing behind the render window
+					tabbedPane.setSelectedIndex(1);
+					tabbedPane.setSelectedIndex(0);
+				}
+			};
+		});
 		
 		JButton btnLoadUnfilteredGraph = new JButton("Load Unfiltered Graph");
+		btnLoadUnfilteredGraph.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				GraphObserver obs = new GraphObserver();
+				obs.OriginalGraph();
+				view.ApplyViewTheme(theme);
+				view.ResetCamera();
+				renderer.Render();
+				
+				//Used to fix dropdown menu showing behind the render window
+				tabbedPane.setSelectedIndex(1);
+				tabbedPane.setSelectedIndex(0);
+			}
+		});
 		
 		JButton btnFilterSelection = new JButton("Filter Selection");
+		btnFilterSelection.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				GraphObserver obs = new GraphObserver();
+				obs.Exctraction();
+				view.ApplyViewTheme(theme);
+				view.ResetCamera();
+				renderer.Render();
+				
+				//Used to fix dropdown menu showing behind the render window
+				tabbedPane.setSelectedIndex(1);
+				tabbedPane.setSelectedIndex(0);
+				
+			}
+		});
 		
-		JButton btnClearSelection = new JButton("Clear Selection");
+	//	JButton btnClearSelection = new JButton("Clear Selection");
+		
 		GroupLayout gl_panel_4 = new GroupLayout(panel_4);
 		gl_panel_4.setHorizontalGroup(
 			gl_panel_4.createParallelGroup(Alignment.TRAILING)
 				.addGroup(gl_panel_4.createSequentialGroup()
 					.addContainerGap(21, Short.MAX_VALUE)
 					.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
-						.addComponent(btnClearSelection)
+					//	.addComponent(btnClearSelection)
 						.addComponent(btnFindShortestPath)
 						.addComponent(btnFilterSelection)
 						.addComponent(btnLoadUnfilteredGraph))
@@ -288,7 +427,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 					.addGap(32)
 					.addComponent(btnFindShortestPath)
 					.addGap(32)
-					.addComponent(btnClearSelection)
+			//		.addComponent(btnClearSelection)
 					.addContainerGap(275, Short.MAX_VALUE))
 		);
 		panel_4.setLayout(gl_panel_4);
@@ -312,7 +451,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		panel.add(lblGeneName, gbc_lblGeneName);
 		
 		JPanel panel_3 = new JPanel();
-		panel_3.setBackground(Color.DARK_GRAY);
+		panel_3.setBackground(Color.BLACK);
 		GridBagConstraints gbc_panel_3 = new GridBagConstraints();
 		gbc_panel_3.insets = new Insets(0, 0, 0, 5);
 		gbc_panel_3.fill = GridBagConstraints.BOTH;
@@ -339,6 +478,7 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		});
 		
 		textField = new JTextField();
+		textField.setEditable(false);
 		textField.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		textField.setColumns(10);
 		textField.setText(degreeCount + "");
@@ -378,6 +518,62 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		textField_1.setColumns(10);
 		
 		JButton btnSearch = new JButton("Search");
+		btnSearch.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				String textFieldGene = textField_1.getText();
+				String textFieldDegrees = textField.getText();
+				GraphInteract interactor = new GraphInteract();
+//				GraphObserver obs = new GraphObserver();
+//				obs.OriginalGraph();
+				
+				
+				//PSUEDO SELECT
+				if(Integer.parseInt(textFieldDegrees)==0)
+				{
+					if(original==true)
+					{
+						System.out.println("PSEUDO NON-EXTRACTED");
+						interactor.selectNode(link, textFieldGene,new String("1"),origGraph.getGraph());
+						view.ResetCamera();
+						view.ZoomToSelection();
+						view.ApplyViewTheme(theme);
+						interactor.selectNode(link, textFieldGene,new String("0"),origGraph.getGraph());
+					}
+					else 
+					{
+						System.out.println("PSEUDO EXTRACTED");
+						interactor.selectNode(link, textFieldGene,new String("1"),extractedGraph.getGraph());
+						view.ResetCamera();
+						view.ZoomToSelection();
+						view.ApplyViewTheme(theme);
+						interactor.selectNode(link, textFieldGene,new String("0"),extractedGraph.getGraph());
+					}
+				}
+				//REGULAR SELECT
+				else if(Integer.parseInt(textFieldDegrees)>0)
+				{
+					if(original==true)
+					{
+						interactor.selectNode(link, textFieldGene,textFieldDegrees,origGraph.getGraph());
+						view.ResetCamera();
+						view.ZoomToSelection();
+						view.ApplyViewTheme(theme);
+					}
+					else 
+					{
+						interactor.selectNode(link, textFieldGene,textFieldDegrees,extractedGraph.getGraph());
+						view.ResetCamera();
+						view.ZoomToSelection();
+						view.ApplyViewTheme(theme);
+					}
+				}
+				view.Render();
+				
+				//Used to fix dropdown menu showing behind the render window
+				tabbedPane.setSelectedIndex(1);
+				tabbedPane.setSelectedIndex(0);
+			}
+		});
 		btnSearch.setMinimumSize(new Dimension(83, 27));
 		GridBagConstraints gbc_btnSearch = new GridBagConstraints();
 		gbc_btnSearch.anchor = GridBagConstraints.NORTH;
@@ -386,10 +582,11 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 		gbc_btnSearch.gridy = 6;
 		panel.add(btnSearch, gbc_btnSearch);
 		
-		JPanel panel_1 = new JPanel();
-		tabbedPane.addTab("Edge Information", null, panel_1, null);
+//		JPanel panel_1 = new JPanel();
+//		tabbedPane.addTab("Edge Information", null, panel_1, null);
 		
 		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.addMouseListener(this);
 		tabbedPane.addTab("Node Information", null, scrollPane, null);
 		
 		
@@ -398,45 +595,61 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
             @Override
             public void hyperlinkUpdate(HyperlinkEvent hle) {
                 if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType())) {
-                	
-                	xCoord= (int)MouseInfo.getPointerInfo().getLocation().getX();
-                	yCoord= (int)MouseInfo.getPointerInfo().getLocation().getY();
-                	
-                    JScrollPane popupPanel = new JScrollPane();
-            		JTextArea textArea = new JTextArea(20,30);
-            		textArea.setLineWrap(true);
-            		textArea.setWrapStyleWord(true);
-            		
-            		
-            		
-            		GraphInteract interactor = new GraphInteract();
-            		String infoTitle = interactor.articleParser(hle.getURL(), "Title");
-            		
-                    String info = interactor.articleParser(hle.getURL(), "Abstract");
-            		textArea.setText("Title: \n" + infoTitle + "\n\n" + "Abstract: \n" +info);
-            		
-            		popupPanel.setViewportView(textArea);
-            		textArea.setCaretPosition(0);
-            		PopupFactory popupFactory = new PopupFactory();
-            		
-            		Dimension dimension = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-            		
-            		if(xCoord>=(dimension.getWidth()-textArea.getPreferredSize().getWidth())){
-            			xCoord=xCoord - (int)textArea.getPreferredSize().getWidth();
-            		}
-            		if((yCoord+textArea.getPreferredSize().getHeight())>=dimension.getHeight()){
-            			yCoord=yCoord - (int)textArea.getPreferredSize().getHeight();
-            		}
-            		popup = popupFactory.getPopup(null, popupPanel, xCoord,yCoord);
-            		System.out.println("Location: " +MouseInfo.getPointerInfo().getLocation().getX() + " " + MouseInfo.getPointerInfo().getLocation().getY());
-            		System.out.println("Screen Size: " + dimension.getWidth() + " " + dimension.getHeight());
-            		System.out.println("Preferred Size: " + textArea.getPreferredSize().getWidth() + " " + textArea.getPreferredSize().getHeight());
-            		System.out.println("Calculated Location: " + xCoord + " " + yCoord);
-            		popup.show();
+                	if(hle.getURL().toString().length() > new String("http://www.ncbi.nlm.nih.gov/pubmed/123456789123456789").length())
+                	{
+	                	xCoord= (int)MouseInfo.getPointerInfo().getLocation().getX();
+	                	yCoord= (int)MouseInfo.getPointerInfo().getLocation().getY();
+	                	
+	                    JScrollPane popupPanel = new JScrollPane();
+	            		JTextArea textArea = new JTextArea(20,30);
+	            		textArea.setLineWrap(true);
+	            		textArea.setWrapStyleWord(true);
+	            		
+	            		
+	            		
+	            		GraphInteract interactor = new GraphInteract();
+	            		String infoTitle = interactor.articleParser(hle.getURL(), "Title");
+	            		
+	                    String info = interactor.articleParser(hle.getURL(), "Abstract");
+	            		textArea.setText("Title: \n" + infoTitle + "\n\n" + "Abstract: \n" +info);
+	            		
+	            		popupPanel.setViewportView(textArea);
+	            		textArea.setCaretPosition(0);
+	            		PopupFactory popupFactory = new PopupFactory();
+	            		
+	            		Dimension dimension = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+	            		
+	            		if(xCoord>=(dimension.getWidth()-textArea.getPreferredSize().getWidth())){
+	            			xCoord=xCoord - (int)textArea.getPreferredSize().getWidth();
+	            		}
+	            		if((yCoord+textArea.getPreferredSize().getHeight())>=dimension.getHeight()){
+	            			yCoord=yCoord - (int)textArea.getPreferredSize().getHeight();
+	            		}
+	            		popup = popupFactory.getPopup(null, popupPanel, xCoord,yCoord);
+	            		System.out.println("Location: " +MouseInfo.getPointerInfo().getLocation().getX() + " " + MouseInfo.getPointerInfo().getLocation().getY());
+	            		System.out.println("Screen Size: " + dimension.getWidth() + " " + dimension.getHeight());
+	            		System.out.println("Preferred Size: " + textArea.getPreferredSize().getWidth() + " " + textArea.getPreferredSize().getHeight());
+	            		System.out.println("Calculated Location: " + xCoord + " " + yCoord);
+	            		popup.show();
+                	}
+                	else
+                	{
+                		try{
+	                		if(Desktop.isDesktopSupported())
+	                		{
+	                			Desktop.getDesktop().browse(new URI(hle.getURL().toString()));
+	                		}
+                		}
+                		catch(Exception uriExc)
+                		{
+                			System.out.println(uriExc.getMessage());
+                		}
+                	}
                 }
             }
         });
 		editorPane.addMouseListener(this);
+		contentPane.addMouseListener(this);
 		scrollPane.setViewportView(editorPane);
 	}
 
@@ -444,9 +657,9 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	private class GraphObserver{
 		void OriginalGraph(){
 			original=true;
-			extractedGraph=null;
+		//	extractedGraph = null;
 			view.RemoveAllRepresentations();
-			view.AddRepresentationFromInput(graph.getGraph());
+			view.AddRepresentationFromInput(origGraph.getGraph());
 			dataRep = view.GetRepresentation(0);
 			
 			link.RemoveAllObservers();
@@ -458,6 +671,10 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 			view.SetLayoutStrategyToSimple2D();
 			view.ResetCamera();
 			renderer.Render();
+			
+			//Used to fix dropdown menu showing behind the render window
+			tabbedPane.setSelectedIndex(1);
+			tabbedPane.setSelectedIndex(0);
 		}
 		
 		
@@ -465,13 +682,21 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 			GraphInteract graphInteractor = new GraphInteract();
 			if(vertices.GetNumberOfTuples()>1 && original==true)
 			{
+				System.out.println("Original Extract");
 				original=false;
 //				rep = view.GetRepresentation(0);
 //				
 //				link = rep.GetAnnotationLink();
 //				link.AddObserver("AnnotationChangedEvent", this,  "selectionCallback");
 //               
-				extractedGraph.setGraph(graphInteractor.extract(vertices,graph.getGraph()));
+
+				//Assign values to nex object
+				extractedGraph.setGraph(graphInteractor.extract(vertices,origGraph.getGraph()));
+				extractedGraph.setAuthor(origGraph.getAuthor());
+				extractedGraph.setPubMedID(origGraph.getPubMedID());
+				extractedGraph.setSystem(origGraph.getSystem());
+				extractedGraph.setSystemType(origGraph.getSystemType());
+				
 				view.RemoveAllRepresentations();
 				view.AddRepresentationFromInput(extractedGraph.getGraph());
 				
@@ -486,16 +711,29 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 			    view.SetLayoutStrategyToSimple2D();
 			    view.ResetCamera();
 				renderer.Render();
+				
+				//Used to fix dropdown menu showing behind the render window
+				tabbedPane.setSelectedIndex(1);
+				tabbedPane.setSelectedIndex(0);
 			}
 			else if(vertices.GetNumberOfTuples()>1  && original==false)
 			{
+				System.out.println("Extracted Extract");
 				original=false;
 //				rep = view.GetRepresentation(0);
 //				
 //				link = rep.GetAnnotationLink();
 //				link.AddObserver("AnnotationChangedEvent", this,  "selectionCallback");
 //				
+				
+				//Set values for object
 				extractedGraph.setGraph(graphInteractor.extract(vertices,extractedGraph.getGraph()));
+				extractedGraph.setAuthor(extractedGraph.getAuthor());
+				extractedGraph.setPubMedID(extractedGraph.getPubMedID());
+				extractedGraph.setSystem(extractedGraph.getSystem());
+				extractedGraph.setSystemType(extractedGraph.getSystemType());
+				
+				
 				view.RemoveAllRepresentations();
 				view.AddRepresentationFromInput(extractedGraph.getGraph());
 				
@@ -510,6 +748,10 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 			    view.SetLayoutStrategyToSimple2D();
 				view.ResetCamera();
 				renderer.Render();
+				
+				//Used to fix dropdown menu showing behind the render window
+				tabbedPane.setSelectedIndex(1);
+				tabbedPane.setSelectedIndex(0);
 			}
 		}
 		
@@ -535,7 +777,11 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 			DatabaseConnector connect = new DatabaseConnector();
 			if(vertices.GetNumberOfTuples() ==1  && original==true)
 			{
-				connect.getGeneInfo(graph.getGraph(), vertices.GetValue(0),organism,editorPane);
+				connect.getGeneInfo(origGraph, vertices.GetValue(0),editorPane);
+			}
+			else if(vertices.GetNumberOfTuples() ==1  && original==false)
+			{
+				connect.getGeneInfo(extractedGraph, vertices.GetValue(0),editorPane);
 			}
 //			if (vertices.GetNumberOfTuples() > 0) {
 //				if(vertices.GetNumberOfTuples() ==1  && original==true)
@@ -551,22 +797,45 @@ public class AppTesting extends JFrame implements ActionListener,MouseListener{
 	}
 	
 	public void actionPerformed(ActionEvent e){
+			
+			ExtendedGraph graphTemp = new ExtendedGraph();
 			DatabaseConnector connect = new DatabaseConnector();
-			String[] organismList= connect.getOrganismList();
-			organism = (String)JOptionPane.showInputDialog(
-	                contentPane,
-	                "Pick an Organism:",
-	                "Organism Selection",
-	                JOptionPane.PLAIN_MESSAGE,null,
-	                organismList,organismList[0]);
-			
-					CreateGraph graphCreator = new CreateGraph(organism);
-					ExtendedGraph graphTemp=graphCreator.createMutableGraph();
-			
+			HashMap<String,Integer> NameToTaxID = new HashMap<String,Integer>();
+			try{
+				if(e.getSource()==mntmImportBiogridInteractions)
+				{
+					String[] organismList;
+					organismList= connect.getOrganismListURLDriven(NameToTaxID);
+					Arrays.sort(organismList);
+					organism = (String)JOptionPane.showInputDialog(
+		                contentPane,
+		                "Pick an Organism:",
+		                "Organism Selection",
+		                JOptionPane.PLAIN_MESSAGE,null,
+		                organismList,organismList[0]);
+				
+					int taxID= NameToTaxID.get(organism);
+						
+					CreateGraph graphCreator = new CreateGraph(taxID,NameToTaxID);
+					graphTemp=graphCreator.createMutableGraphURL();
 					this.InitializeRenderer(graphTemp);
-					this.renderer.Render();
-					this.view.GetInteractor().Start();
+				}
+				else if(e.getSource()==importGeneGraph)
+				{
+					String geneName = JOptionPane.showInputDialog(
+							"Please enter the gene name:");
+					CreateGraph graphCreator = new CreateGraph(geneName,NameToTaxID);
+					graphTemp=graphCreator.createMutableGraphURL();
+					this.InitializeRenderer(graphTemp);
+				}
+				this.renderer.Render();
+				this.view.GetInteractor().Start();
+			}
+			catch(Exception exc){
+				System.out.println(exc.getMessage());
+			}
 	}
+
 	
 	public void PopupShow()
 	{
