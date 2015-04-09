@@ -88,6 +88,8 @@ public class FileImportExport implements ActionListener {
 		
 		vtkIntArray weights=graph.getEdgeWeights();
 		vtkStringArray genes=graph.getLabels();
+		vtkStringArray organisms=graph.getOrganismNames();
+		
 		ArrayList<ArrayList> authors = graph.getAuthor();
 		ArrayList<ArrayList> pubMedID = graph.getPubMedID();
 		ArrayList<ArrayList> system = graph.getSystem();
@@ -101,7 +103,8 @@ public class FileImportExport implements ActionListener {
 			edge=iterator.NextGraphEdge();
 			
 			writer.println(genes.GetValue(edge.GetTarget())+ "\t" + genes.GetValue(edge.GetSource()) + "\t" 
-			+ weights.GetValue(edge.GetId())+"\t-\t-\t-\t-\t-\t ");
+			+organisms.GetValue(edge.GetTarget()) + "\t" + organisms.GetValue(edge.GetSource()) + "\t"
+					+ weights.GetValue(edge.GetId())+"\t-\t-\t-\t-\t-\t ");
 			for(int i=0;i<weights.GetValue(edge.GetId());i++)
 			{
 				//formatted string

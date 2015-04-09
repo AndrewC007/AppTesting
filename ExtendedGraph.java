@@ -123,4 +123,8 @@ public class ExtendedGraph extends vtkMutableUndirectedGraph {
 		return (vtkStringArray)this.graph.GetVertexData().GetAbstractArray("labels");
 	}
 	
+	public vtkStringArray getOrganismNames()
+	{
+		return (vtkStringArray)this.graph.GetVertexData().GetAbstractArray("organisms");
+	}
 }

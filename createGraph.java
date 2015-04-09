@@ -406,11 +406,7 @@ public class CreateGraph {
 		{ 
 			System.out.println(e.getMessage());
 		}
-		
-//		System.out.println("LABELS:");
-//		vtkStringArray labelsTest = (vtkStringArray) testing.getGraph().GetVertexData().GetAbstractArray("labels");
-//		for(int i=0;i<labelsTest.GetSize();i++)
-//			System.out.println(labelsTest.GetValue(i));
+
 		return testing;
 	}
 	
@@ -523,6 +519,12 @@ public class CreateGraph {
 		labels.SetNumberOfComponents(1);
 		labels.SetName("labels");
 		
+		//organism name array
+		vtkStringArray organisms = new vtkStringArray();
+		organisms.SetNumberOfComponents(1);
+		organisms.SetName("organisms");
+		
+		
 		//edge weight array
 		vtkIntArray weights = new vtkIntArray();
 		weights.SetNumberOfComponents(1);
@@ -564,6 +566,7 @@ public class CreateGraph {
 				idToGene.put(vertexNum, tempValues.get(0));//add vertex
 				geneToId.put(tempValues.get(0), vertexNum);
 				labels.InsertNextValue(tempValues.get(0));
+				organisms.InsertNextValue(tempValues.get(2));
 				vertices.add(graph.getGraph().AddVertex());
 				vertexNum++;
 			}
@@ -572,13 +575,14 @@ public class CreateGraph {
 				idToGene.put(vertexNum, tempValues.get(1));//add Vertex
 				geneToId.put(tempValues.get(1), vertexNum);
 				labels.InsertNextValue(tempValues.get(1));
+				organisms.InsertNextValue(tempValues.get(3));
 				vertices.add(graph.getGraph().AddVertex());
 				vertexNum++;
 			}
 			
 			
 			//Insert edge weight value into array
-			edgeWeight=Integer.parseInt(tempValues.get(2));
+			edgeWeight=Integer.parseInt(tempValues.get(4));
 			weights.InsertNextValue(edgeWeight);
 			
 		//	System.out.println("Test" + tempValues.get(0) + ": " + geneToId.get(tempValues.get(0))+ " "+ tempValues.get(1) + ": " + geneToId.get(tempValues.get(1)));
@@ -614,16 +618,33 @@ public class CreateGraph {
 				tempValues.clear();
 			}
 			//Add temp values to the specified edge
-			author.add(authorTemp);
-			system.add(systemTemp);
-			systemType.add(systemTypeTemp);
-			pubMedID.add(pubMedIDTemp);
-	//		tempValues.clear();
+			author.add(new ArrayList());
+			system.add(new ArrayList());
+			systemType.add(new ArrayList());
+			pubMedID.add(new ArrayList());
+			
+			
+			for(int i=0; i<edgeWeight; i++)
+			{
+				author.get(edgeNum).add(authorTemp.get(i));
+				system.get(edgeNum).add(systemTemp.get(i));
+				systemType.get(edgeNum).add(systemTypeTemp.get(i));
+				pubMedID.get(edgeNum).add(pubMedIDTemp.get(i));
+			}
+
+			authorTemp.clear();
+			systemTemp.clear();
+			systemTypeTemp.clear();
+			pubMedIDTemp.clear();
+			edgeNum++;
 		}
 		
+
 		//Set relevant information
 		graph.getGraph().GetVertexData().AddArray(labels);
+		graph.getGraph().GetVertexData().AddArray(organisms);
 		graph.getGraph().GetEdgeData().AddArray(weights);
+		
 		graph.setAuthor(author);
 		graph.setSystem(system);
 		graph.setSystemType(systemType);
