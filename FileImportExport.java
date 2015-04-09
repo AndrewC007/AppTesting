@@ -81,7 +81,7 @@ public class FileImportExport implements ActionListener {
 		String fileP = file.getAbsolutePath();
 		PrintWriter writer = new PrintWriter(new FileWriter(fileP));
 		
-		writer.println("Gene1\tGene2\tEdge Weight\tUser Edge Weight\tAuthor\tSystem Type\tSystem\tPubMedID");
+		writer.println("Gene1\tGene2\tOrganism1\tOrganism2\tEdge Weight\tAuthor\tSystem Type\tSystem\tPubMedID");
 		
 		vtkEdgeListIterator iterator = new vtkEdgeListIterator();
 		
@@ -104,11 +104,11 @@ public class FileImportExport implements ActionListener {
 			
 			writer.println(genes.GetValue(edge.GetTarget())+ "\t" + genes.GetValue(edge.GetSource()) + "\t" 
 			+organisms.GetValue(edge.GetTarget()) + "\t" + organisms.GetValue(edge.GetSource()) + "\t"
-					+ weights.GetValue(edge.GetId())+"\t-\t-\t-\t-\t-\t ");
+					+ weights.GetValue(edge.GetId())+"\t-\t-\t-\t-\t ");
 			for(int i=0;i<weights.GetValue(edge.GetId());i++)
 			{
 				//formatted string
-				writer.println("-\t-\t-\t-\t" + authors.get(edge.GetId()).get(i) +"\t"+
+				writer.println("-\t-\t-\t-\t-\t" + authors.get(edge.GetId()).get(i) +"\t"+
 						systemType.get(edge.GetId()).get(i) + "\t" + system.get(edge.GetId()).get(i)
 						+"\t"+pubMedID.get(edge.GetId()).get(i).toString()+ "\t ");
 			}

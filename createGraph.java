@@ -611,10 +611,10 @@ public class CreateGraph {
 			//	System.out.println("Size:" +tempValues.size());
 				//Load temp values for single edge
 				
-				authorTemp.add(tempValues.get(4));
-				systemTemp.add(tempValues.get(6));
-				systemTypeTemp.add(tempValues.get(5));
-				pubMedIDTemp.add(tempValues.get(7));
+				authorTemp.add(tempValues.get(5));
+				systemTemp.add(tempValues.get(7));
+				systemTypeTemp.add(tempValues.get(6));
+				pubMedIDTemp.add(tempValues.get(8));
 				tempValues.clear();
 			}
 			//Add temp values to the specified edge
