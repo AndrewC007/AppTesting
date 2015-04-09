@@ -42,6 +42,17 @@ public class ExtendedGraph extends vtkMutableUndirectedGraph {
 		this.author = author;
 	}
 	
+	public void setAuthor(ArrayList<ArrayList> author, vtkIdTypeArray edges,int numOfEdges)
+	{
+		ArrayList<ArrayList> authorTemp = new ArrayList<ArrayList>();
+		
+		for(int i=0;i<numOfEdges;i++)
+		{
+			authorTemp.add(author.get(edges.GetValue(i)));
+		}
+		this.author = authorTemp;
+	}
+	
 	public ArrayList<ArrayList> getSystem()
 	{
 		return system;
@@ -50,6 +61,16 @@ public class ExtendedGraph extends vtkMutableUndirectedGraph {
 	public void setSystem(ArrayList<ArrayList> system)
 	{
 		this.system = system;
+	}
+	
+	public void setSystem(ArrayList<ArrayList> system, vtkIdTypeArray edges, int numOfEdges)
+	{
+		ArrayList<ArrayList> systemTemp = new ArrayList<ArrayList>();
+		for(int i=0;i<numOfEdges;i++)
+		{
+			systemTemp.add(system.get(edges.GetValue(i)));
+		}
+		this.system = systemTemp;
 	}
 	
 	public ArrayList<ArrayList> getSystemType()
@@ -62,6 +83,16 @@ public class ExtendedGraph extends vtkMutableUndirectedGraph {
 		this.systemType = systemType;
 	}
 	
+	public void setSystemType(ArrayList<ArrayList> systemType, vtkIdTypeArray edges, int numOfEdges)
+	{
+		ArrayList<ArrayList> systemTypeTemp = new ArrayList<ArrayList>();
+		for(int i=0;i<numOfEdges;i++)
+		{
+			systemTypeTemp.add(systemType.get(edges.GetValue(i)));
+		}
+		this.systemType = systemTypeTemp;
+	}
+	
 	public ArrayList<ArrayList> getPubMedID()
 	{
 		return pubMedID;
@@ -70,6 +101,16 @@ public class ExtendedGraph extends vtkMutableUndirectedGraph {
 	public void setPubMedID(ArrayList<ArrayList> pubMedID)
 	{
 		this.pubMedID = pubMedID;
+	}
+	
+	public void setPubMedID(ArrayList<ArrayList> pubMedID, vtkIdTypeArray edges, int numOfEdges)
+	{
+		ArrayList<ArrayList> pubMedIDTemp = new ArrayList<ArrayList>();
+		for(int i=0;i<numOfEdges;i++)
+		{
+			pubMedIDTemp.add(pubMedID.get(edges.GetValue(i)));
+		}
+		this.pubMedID = pubMedIDTemp;
 	}
 	
 	public vtkIntArray getEdgeWeights()
@@ -81,4 +122,5 @@ public class ExtendedGraph extends vtkMutableUndirectedGraph {
 	{
 		return (vtkStringArray)this.graph.GetVertexData().GetAbstractArray("labels");
 	}
+	
 }

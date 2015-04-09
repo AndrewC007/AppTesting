@@ -245,7 +245,7 @@ public class CreateGraph {
 	
 	
 	
-	//CREATE GRAPH FROM URL BASED INFORMATION AS WEL AS SET ATTRIBUTES
+	//CREATE GRAPH FROM URL BASED INFORMATION AS WELL AS SET ATTRIBUTES
 	public ExtendedGraph createMutableGraphURL()
 	{
 		
@@ -391,7 +391,6 @@ public class CreateGraph {
 	
 				for(int i=0; i<edgeWeights.size();i++)
 				{
-					System.out.println(edgeWeights.get(i));
 					weights.InsertNextValue(edgeWeights.get(i));
 				}
 				

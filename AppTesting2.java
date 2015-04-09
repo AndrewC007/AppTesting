@@ -54,6 +54,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -98,7 +99,10 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
      vtkAnnotationLink link = new vtkAnnotationLink();
      vtkDataRepresentation dataRep = new vtkDataRepresentation();
      vtkIdTypeArray vertices;
+     vtkIdTypeArray edges;
+     int numberOfEdges; // Used because graph path gives more edges than required and causes an exception
      int verticesNode; //Remembers which node the vertices are in
+     int edgesNode; //Remeber which node the edges are in
      boolean original=true;
      String organism;
      JEditorPane editorPane = new JEditorPane();
@@ -127,6 +131,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 	{
 		System.out.println("Rendering");
 		this.origGraph=graphTemp;
+	
 //		this.extractedGraph =graph;
 //		this.origGraph = graphTemp;
 		
@@ -138,7 +143,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 	    theme.SetBackgroundColor(0, 0, 0);
 	    theme.SetBackgroundColor2(0, 0, 0);
 		
-        view=new vtkGraphLayoutView();
+        this.view=new vtkGraphLayoutView();
         this.view.SetRenderWindow(this.renderer.GetRenderWindow());
         this.view.SetLayoutStrategyToSimple2D();
         this.view.SetVertexLabelVisibility(true);
@@ -153,9 +158,10 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
         GraphObserver obs = new GraphObserver();
         this.link.AddObserver("AnnotationChangedEvent", obs, "selectionCallback");
         
-        panel.remove(panel_2);
+        if(renderer.getParent()==null)
+        	panel.remove(panel_2);
         
-    	JPanel panel_2 = new JPanel();
+  
 		GridBagConstraints gbc_panel_2 = new GridBagConstraints();
 		gbc_panel_2.gridwidth = 3;
 		gbc_panel_2.gridheight = 5;
@@ -165,17 +171,30 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 		gbc_panel_2.gridy = 0;
 		
 		if(renderer.getParent()!=null)
-			System.out.println("Removed");
-			panel.remove(renderer);
+		{
+			tabbedPane.setSelectedIndex(1);
+			tabbedPane.setSelectedIndex(0);
+			
+			//Import Export Action Listener
+			fileExchanger.UpdateGraph(origGraph);
+		}
+		else
+		{
+			panel.add(renderer, gbc_panel_2);
+			tabbedPane.setSelectedIndex(1);
+			tabbedPane.setSelectedIndex(0);
+			
+			//Import Export Action Listener
+			fileExchanger.UpdateGraph(origGraph);
+		}
 		
-		panel.add(renderer, gbc_panel_2);
-		
+		System.gc();
 		//Used to fix dropdown menu showing behind the render window
-		tabbedPane.setSelectedIndex(1);
-		tabbedPane.setSelectedIndex(0);
-		
-		//Import Export Action Listener
-		fileExchanger.UpdateGraph(origGraph);
+//		tabbedPane.setSelectedIndex(1);
+//		tabbedPane.setSelectedIndex(0);
+//		
+//		//Import Export Action Listener
+//		fileExchanger.UpdateGraph(origGraph);
 	}
 	
 	
@@ -209,7 +228,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 		mnImportGraph.add(mntmImportCustomGraph);
 		
 		//Import Export Action Listener 
-		fileExchanger=new FileImportExport(contentPane, mntmImportCustomGraph,mntmExportGraph,graph,this);
+		fileExchanger=new FileImportExport(contentPane, mntmImportCustomGraph,mntmExportGraph,origGraph,this);
 		mntmImportCustomGraph.addActionListener(fileExchanger);
 		mntmExportGraph.addActionListener(fileExchanger);
 		
@@ -369,6 +388,13 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 					//Used to fix dropdown menu showing behind the render window
 					tabbedPane.setSelectedIndex(1);
 					tabbedPane.setSelectedIndex(0);
+					
+					
+					//NEED TO DO FOLLOWING CODE FOR GRAPH EXTRACTION PURPOSES
+					
+					vertices=vertex_path;
+					numberOfEdges= vertices.GetSize()-1;
+					edges=edgearray;
 				}
 			};
 		});
@@ -626,10 +652,6 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 	            			yCoord=yCoord - (int)textArea.getPreferredSize().getHeight();
 	            		}
 	            		popup = popupFactory.getPopup(null, popupPanel, xCoord,yCoord);
-	            		System.out.println("Location: " +MouseInfo.getPointerInfo().getLocation().getX() + " " + MouseInfo.getPointerInfo().getLocation().getY());
-	            		System.out.println("Screen Size: " + dimension.getWidth() + " " + dimension.getHeight());
-	            		System.out.println("Preferred Size: " + textArea.getPreferredSize().getWidth() + " " + textArea.getPreferredSize().getHeight());
-	            		System.out.println("Calculated Location: " + xCoord + " " + yCoord);
 	            		popup.show();
                 	}
                 	else
@@ -692,10 +714,11 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 
 				//Assign values to nex object
 				extractedGraph.setGraph(graphInteractor.extract(vertices,origGraph.getGraph()));
-				extractedGraph.setAuthor(origGraph.getAuthor());
-				extractedGraph.setPubMedID(origGraph.getPubMedID());
-				extractedGraph.setSystem(origGraph.getSystem());
-				extractedGraph.setSystemType(origGraph.getSystemType());
+				extractedGraph.setAuthor(origGraph.getAuthor(),edges, numberOfEdges);
+				extractedGraph.setPubMedID(origGraph.getPubMedID(),edges, numberOfEdges);
+				extractedGraph.setSystem(origGraph.getSystem(),edges, numberOfEdges);
+				extractedGraph.setSystemType(origGraph.getSystemType(),edges, numberOfEdges);
+				
 				
 				view.RemoveAllRepresentations();
 				view.AddRepresentationFromInput(extractedGraph.getGraph());
@@ -728,10 +751,10 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 				
 				//Set values for object
 				extractedGraph.setGraph(graphInteractor.extract(vertices,extractedGraph.getGraph()));
-				extractedGraph.setAuthor(extractedGraph.getAuthor());
-				extractedGraph.setPubMedID(extractedGraph.getPubMedID());
-				extractedGraph.setSystem(extractedGraph.getSystem());
-				extractedGraph.setSystemType(extractedGraph.getSystemType());
+				extractedGraph.setAuthor(extractedGraph.getAuthor(),edges, numberOfEdges);
+				extractedGraph.setPubMedID(extractedGraph.getPubMedID(),edges, numberOfEdges);
+				extractedGraph.setSystem(extractedGraph.getSystem(),edges, numberOfEdges);
+				extractedGraph.setSystemType(extractedGraph.getSystemType(),edges, numberOfEdges);
 				
 				
 				view.RemoveAllRepresentations();
@@ -765,34 +788,29 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 			if(node1_field_type==3)
 			{
 				verticesNode=1;
+				edgesNode=0;
 			}
 			else if(node0_field_type==3)
 			{
 				verticesNode=0;
+				edgesNode=1;
 			}
 			
 			
 			
 			vertices=(vtkIdTypeArray)(link.GetCurrentSelection().GetNode(verticesNode).GetSelectionList());
+			edges=(vtkIdTypeArray)(link.GetCurrentSelection().GetNode(edgesNode).GetSelectionList());
+			numberOfEdges=edges.GetSize();
 			DatabaseConnector connect = new DatabaseConnector();
+			
 			if(vertices.GetNumberOfTuples() ==1  && original==true)
 			{
 				connect.getGeneInfo(origGraph, vertices.GetValue(0),editorPane);
 			}
 			else if(vertices.GetNumberOfTuples() ==1  && original==false)
 			{
-				connect.getGeneInfo(extractedGraph, vertices.GetValue(0),editorPane);
+				connect.getGeneInfo(extractedGraph,vertices.GetValue(0),editorPane);
 			}
-//			if (vertices.GetNumberOfTuples() > 0) {
-//				if(vertices.GetNumberOfTuples() ==1  && original==true)
-//				{
-//					connector.getGeneInfo(graph, vertices.GetValue(0),organismSelected);
-//				}
-//				else if(vertices.GetNumberOfTuples() ==1 && original==false)
-//				{
-//					connector.getGeneInfo(extractedGraph, vertices.GetValue(0),organismSelected);
-//				}
-//			}
 		}
 	}
 	

@@ -138,20 +138,18 @@ public vtkIdTypeArray FindEdges(vtkIdTypeArray vertex_list, vtkMutableUndirected
 		vtkEdgeListIterator edges=new vtkEdgeListIterator();
 		vtkIdTypeArray edgearray=new vtkIdTypeArray();
 		
-		for(int j=0;j<vertex_list.GetNumberOfTuples()-1;j++){
+		for(int j=0;j<vertex_list.GetSize()-1;j++){
 						
 			g.GetEdges(edges);
 			while(edges.HasNext()){
 			
 				vtkGraphEdge e=edges.NextGraphEdge();
 						
-				if(e.GetSource()==vertex_list.GetValue(j) && e.GetTarget()==vertex_list.GetValue(j+1)||e.GetSource()==vertex_list.GetValue(j+1) && e.GetTarget()==vertex_list.GetValue(j)){
+				if((e.GetSource()==vertex_list.GetValue(j) && e.GetTarget()==vertex_list.GetValue(j+1))||(e.GetSource()==vertex_list.GetValue(j+1) && e.GetTarget()==vertex_list.GetValue(j))){
 					edgearray.InsertNextValue(e.GetId());
 				}
-			
 			}
 		}		
-		
 		return edgearray;			
 }
 
@@ -173,6 +171,7 @@ public vtkSelection GetSelection(vtkIdTypeArray vertex_list,vtkIdTypeArray edge_
 	vertex_sel.SetSelectionList(vertex_list);
     edge_sel.SetSelectionList(edge_list);
     
+   
 	sel.AddNode(edge_sel);
 	sel.AddNode(vertex_sel);
 	
