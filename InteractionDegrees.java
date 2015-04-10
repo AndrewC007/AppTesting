@@ -8,7 +8,7 @@ public class InteractionDegrees {
 	vtkIntArray ePath=new vtkIntArray();
 	vtkBoostBreadthFirstSearch my_BFS=new vtkBoostBreadthFirstSearch();
 	
-	public static void SelectDegrees(vtkMutableUndirectedGraph graph, int degrees, int vertexIndex, vtkAnnotationLink link)
+	public static vtkSelection SelectDegrees(vtkMutableUndirectedGraph graph, int degrees, int vertexIndex, vtkAnnotationLink link)
 	{
 		vtkIdTypeArray selectedNodes = new vtkIdTypeArray();
 		selectedNodes.InsertNextValue(vertexIndex);
@@ -73,7 +73,7 @@ public class InteractionDegrees {
 		node.SetSelectionList(selectedNodes);
 		sel.AddNode(edgeSelection);
 		sel.AddNode(node);
-		link.SetCurrentSelection(sel);
+		return sel;
 	}
 
 }

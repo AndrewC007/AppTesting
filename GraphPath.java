@@ -88,6 +88,7 @@ public vtkIdTypeArray FindPath(int vertex_ID1, int vertex_ID2,vtkMutableUndirect
 		
 		//total steps in path minus 1
 		steps_left=cbfs.GetValue(vertex_ID2)-1;
+//		AppTesting2.updateVertexNumber(steps_left+1);
 		
 		//Find the path
 		while(!Found){
@@ -105,7 +106,7 @@ public vtkIdTypeArray FindPath(int vertex_ID1, int vertex_ID2,vtkMutableUndirect
 								
 				//Found the path
 				if(steps.GetValue(cindex)==vertex_ID2){
-				Found=true;
+					Found=true;
 				}
 				
 				//find the next possible steps
@@ -129,6 +130,7 @@ public vtkIdTypeArray FindPath(int vertex_ID1, int vertex_ID2,vtkMutableUndirect
 					
 		}
 			
+		System.out.println("Size of path: " + cpath.GetSize());
 		return cpath;
 	}
 
@@ -150,6 +152,8 @@ public vtkIdTypeArray FindEdges(vtkIdTypeArray vertex_list, vtkMutableUndirected
 				}
 			}
 		}		
+	
+		System.out.println("Number of Edges in path: " + edgearray.GetSize());
 		return edgearray;			
 }
 

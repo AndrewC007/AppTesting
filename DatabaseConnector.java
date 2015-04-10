@@ -254,6 +254,7 @@ public class DatabaseConnector
 //						edgeCount++;
 //					}
 					
+					
 					while(iterator.HasNext())
 					{
 						edge=iterator.NextGraphEdge();

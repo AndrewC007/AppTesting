@@ -100,7 +100,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
      vtkDataRepresentation dataRep = new vtkDataRepresentation();
      vtkIdTypeArray vertices;
      vtkIdTypeArray edges;
-     int numberOfEdges; // Used because graph path gives more edges than required and causes an exception
+     static int numberOfEdges; // Used because graph path gives more edges than required and causes an exception
      int verticesNode; //Remembers which node the vertices are in
      int edgesNode; //Remeber which node the edges are in
      boolean original=true;
@@ -111,6 +111,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
      JMenuItem mntmImportBiogridInteractions; //menu for default biogrid graph creation
      JMenuItem importGeneGraph;
      JTabbedPane tabbedPane;
+ 
      
      int xCoord;
      int yCoord;
@@ -123,6 +124,11 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 		test.setVisible(true);
 	}
 
+	//Used due to pathways bugs
+	public static void updateVertexNumber(int numberOfVertices)
+	{
+		numberOfEdges = numberOfVertices-1;
+	}
 	/**
 	 * Create the frame.
 	 */
@@ -356,7 +362,11 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 		btnFindShortestPath.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				
+				System.out.println("Vertices");
+				for(int i=0;i<vertices.GetNumberOfTuples();i++)
+					System.out.println(vertices.GetValue(i));
 				if(vertices.GetNumberOfTuples()==2){
+					
 					GraphPath gpath=new GraphPath();
 					System.out.println("Vertices: " + vertices.GetValue(0) + " " + vertices.GetValue(1));
 					//Used to be extended graph
@@ -378,7 +388,13 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 									
 					//Get The Selection Object				
 					vtkSelection sel=new vtkSelection();
+					
+				//	vertex_path=AppTesting2.RemoveNegativeVertices(vertex_path);
+				//	edgearray=AppTesting2.RemoveNegativeEdges(edgearray);
+					
 					sel=gpath.GetSelection(vertex_path, edgearray);
+					
+				
 				    link.SetCurrentSelection(sel);
 					link.Update();
 					view.ZoomToSelection();
@@ -393,8 +409,9 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 					//NEED TO DO FOLLOWING CODE FOR GRAPH EXTRACTION PURPOSES
 					
 					vertices=vertex_path;
-					numberOfEdges= vertices.GetSize()-1;
 					edges=edgearray;
+					vertices=AppTesting2.RemoveNegativeVertices(vertices);
+					edges=AppTesting2.RemoveNegativeEdges(edges);
 				}
 			};
 		});
@@ -552,42 +569,56 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 //				GraphObserver obs = new GraphObserver();
 //				obs.OriginalGraph();
 				
-				
 				//PSUEDO SELECT
 				if(Integer.parseInt(textFieldDegrees)==0)
 				{
 					if(original==true)
 					{
+						vtkSelection sel = new vtkSelection();
 						System.out.println("PSEUDO NON-EXTRACTED");
-						interactor.selectNode(link, textFieldGene,new String("1"),origGraph.getGraph());
+						sel=interactor.selectNode(link, textFieldGene,new String("1"),origGraph.getGraph());
+						link.SetCurrentSelection(sel);
+						
 						view.ResetCamera();
 						view.ZoomToSelection();
 						view.ApplyViewTheme(theme);
-						interactor.selectNode(link, textFieldGene,new String("0"),origGraph.getGraph());
+						
+						sel = interactor.selectNode(link, textFieldGene,new String("0"),origGraph.getGraph());
+						link.SetCurrentSelection(sel);
 					}
 					else 
 					{
+						vtkSelection sel = new vtkSelection();
 						System.out.println("PSEUDO EXTRACTED");
-						interactor.selectNode(link, textFieldGene,new String("1"),extractedGraph.getGraph());
+						sel=interactor.selectNode(link, textFieldGene,new String("1"),extractedGraph.getGraph());
+						link.SetCurrentSelection(sel);
+						
 						view.ResetCamera();
 						view.ZoomToSelection();
 						view.ApplyViewTheme(theme);
-						interactor.selectNode(link, textFieldGene,new String("0"),extractedGraph.getGraph());
+						
+						sel=interactor.selectNode(link, textFieldGene,new String("0"),extractedGraph.getGraph());
+						link.SetCurrentSelection(sel);
 					}
 				}
 				//REGULAR SELECT
 				else if(Integer.parseInt(textFieldDegrees)>0)
 				{
+					vtkSelection sel = new vtkSelection();
 					if(original==true)
 					{
-						interactor.selectNode(link, textFieldGene,textFieldDegrees,origGraph.getGraph());
+						sel=interactor.selectNode(link, textFieldGene,textFieldDegrees,origGraph.getGraph());
+						link.SetCurrentSelection(sel);
+						link.Update();
 						view.ResetCamera();
 						view.ZoomToSelection();
 						view.ApplyViewTheme(theme);
 					}
 					else 
 					{
-						interactor.selectNode(link, textFieldGene,textFieldDegrees,extractedGraph.getGraph());
+						sel=interactor.selectNode(link, textFieldGene,textFieldDegrees,extractedGraph.getGraph());
+						link.SetCurrentSelection(sel);
+						link.Update();
 						view.ResetCamera();
 						view.ZoomToSelection();
 						view.ApplyViewTheme(theme);
@@ -710,15 +741,21 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 //				
 //				link = rep.GetAnnotationLink();
 //				link.AddObserver("AnnotationChangedEvent", this,  "selectionCallback");
-//               
-
-				//Assign values to nex object
-				extractedGraph.setGraph(graphInteractor.extract(vertices,origGraph.getGraph()));
+//             
+				
+				System.out.println("Num of Edges: "  +numberOfEdges);
+				edges=AppTesting2.RemoveNegativeEdges(edges);
+				
+				System.out.println("Vertices");
+				System.out.println("Number of Vertices: " + vertices.GetSize());
+				vertices=AppTesting2.RemoveNegativeVertices(vertices);
+				
+				//Assign values to next object	
+				extractedGraph.setGraph(graphInteractor.extract(vertices,edges,origGraph.getGraph()));
 				extractedGraph.setAuthor(origGraph.getAuthor(),edges, numberOfEdges);
 				extractedGraph.setPubMedID(origGraph.getPubMedID(),edges, numberOfEdges);
 				extractedGraph.setSystem(origGraph.getSystem(),edges, numberOfEdges);
 				extractedGraph.setSystemType(origGraph.getSystemType(),edges, numberOfEdges);
-				
 				
 				view.RemoveAllRepresentations();
 				view.AddRepresentationFromInput(extractedGraph.getGraph());
@@ -735,6 +772,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 			    view.ResetCamera();
 				renderer.Render();
 				
+				fileExchanger.UpdateGraph(extractedGraph);
 				//Used to fix dropdown menu showing behind the render window
 				tabbedPane.setSelectedIndex(1);
 				tabbedPane.setSelectedIndex(0);
@@ -749,8 +787,16 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 //				link.AddObserver("AnnotationChangedEvent", this,  "selectionCallback");
 //				
 				
+			
+				System.out.println("Num of Edges: "  +numberOfEdges);
+				edges=AppTesting2.RemoveNegativeEdges(edges);
+				
+				System.out.println("Vertices");
+				System.out.println("Number of Vertices: " + vertices.GetSize());
+				vertices=AppTesting2.RemoveNegativeVertices(vertices);
+				
 				//Set values for object
-				extractedGraph.setGraph(graphInteractor.extract(vertices,extractedGraph.getGraph()));
+				extractedGraph.setGraph(graphInteractor.extract(vertices,edges,extractedGraph.getGraph()));
 				extractedGraph.setAuthor(extractedGraph.getAuthor(),edges, numberOfEdges);
 				extractedGraph.setPubMedID(extractedGraph.getPubMedID(),edges, numberOfEdges);
 				extractedGraph.setSystem(extractedGraph.getSystem(),edges, numberOfEdges);
@@ -772,6 +818,8 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 				view.ResetCamera();
 				renderer.Render();
 				
+				
+				fileExchanger.UpdateGraph(extractedGraph);
 				//Used to fix dropdown menu showing behind the render window
 				tabbedPane.setSelectedIndex(1);
 				tabbedPane.setSelectedIndex(0);
@@ -779,11 +827,16 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 		}
 		
 		void selectionCallback(){
+			System.out.println("HERE");
 			vtkSelection sel = link.GetCurrentSelection();
 			vtkSelectionNode node1 = sel.GetNode(1);
 			vtkSelectionNode node0 = sel.GetNode(0);
-			int node1_field_type = node1.GetFieldType();
-			int node0_field_type = node0.GetFieldType();
+			int node1_field_type=-1;
+			if(node1!=null)
+				node1_field_type = node1.GetFieldType();
+			int node0_field_type=-1;
+			if(node0!=null)
+				node0_field_type = node0.GetFieldType();
 			
 			if(node1_field_type==3)
 			{
@@ -797,21 +850,32 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 			}
 			
 			
-			
 			vertices=(vtkIdTypeArray)(link.GetCurrentSelection().GetNode(verticesNode).GetSelectionList());
 			edges=(vtkIdTypeArray)(link.GetCurrentSelection().GetNode(edgesNode).GetSelectionList());
-			numberOfEdges=edges.GetSize();
-			DatabaseConnector connect = new DatabaseConnector();
 			
-			if(vertices.GetNumberOfTuples() ==1  && original==true)
+			System.out.println("Vertices");
+			for(int i=0;i<vertices.GetSize();i++)
+				System.out.println(vertices.GetValue(i));
+			//System.out.println("Vertices: " + vertices.GetValue(0));
+			if(edges!=null)
+			{
+				numberOfEdges=edges.GetSize();
+			}
+			
+			
+			DatabaseConnector connect = new DatabaseConnector();
+
+
+			if(vertices.GetNumberOfTuples() ==1  && original==true )
 			{
 				connect.getGeneInfo(origGraph, vertices.GetValue(0),editorPane);
 			}
-			else if(vertices.GetNumberOfTuples() ==1  && original==false)
+			else if(vertices.GetNumberOfTuples() ==1  && original==false )
 			{
 				connect.getGeneInfo(extractedGraph,vertices.GetValue(0),editorPane);
 			}
 		}
+		
 	}
 	
 	public void actionPerformed(ActionEvent e){
@@ -854,7 +918,75 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 			}
 	}
 
+	public static vtkIdTypeArray RemoveNegativeVertices(vtkIdTypeArray vertices)
+	{
+		//REMOVE IRRELEVANT VERTICES
+		int numberOfVertices= vertices.GetSize();
+		int newNumberOfVertices=numberOfVertices;
+		for(int i=0; i<numberOfVertices;i++)
+		{
+			if(vertices.GetValue(i)<0)
+				newNumberOfVertices--;
+		}
+		int[] verticesTemp2 = new int[newNumberOfVertices];
+		
+		int verticesCount=0;
+		for(int i=0; i<numberOfVertices; i++)
+		{
+			if(vertices.GetValue(i)>=0)
+			{
+				verticesTemp2[verticesCount]=vertices.GetValue(i);
+				verticesCount++;
+			}
+		}
+		
+		numberOfVertices=newNumberOfVertices;
+		Arrays.sort(verticesTemp2);
+		
+		System.out.println("Vertices");
+		for(int i=0; i<numberOfVertices; i++)
+		{
+			vertices.InsertValue(i, verticesTemp2[i]);
+			System.out.println(vertices.GetValue(i));
+		}
+		
+		return vertices;
+		//DONE REMOVING IRRELEVANT VERTICES
+	}
 	
+	public static vtkIdTypeArray RemoveNegativeEdges(vtkIdTypeArray edges)
+	{
+
+		//REMOVE IRRELEVANT EDGES
+		int newNumberOfEdges=numberOfEdges;
+		for(int i=0; i<numberOfEdges;i++)
+		{
+			if(edges.GetValue(i)<0)
+				newNumberOfEdges--;
+		}
+		
+		int[] edgesTemp2 = new int[newNumberOfEdges];
+		int edgesCount=0;
+		for(int i=0; i<numberOfEdges; i++)
+		{
+			if(edges.GetValue(i)>=0)
+			{
+				edgesTemp2[edgesCount] = edges.GetValue(i);
+				edgesCount++;
+			}
+		}
+		numberOfEdges=newNumberOfEdges;
+		Arrays.sort(edgesTemp2);
+		
+		System.out.println("Edges");
+		for(int i=0; i<numberOfEdges; i++)
+		{
+			edges.InsertValue(i, edgesTemp2[i]);
+			System.out.println(edges.GetValue(i));
+		}
+		return edges;
+		//DONE REMOVING IRRELEVANT EDGES
+	}
 	public void PopupShow()
 	{
 		JPanel popupPanel = new JPanel();
