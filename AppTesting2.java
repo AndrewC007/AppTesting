@@ -27,6 +27,7 @@ import javax.swing.JToolBar;
 
 import java.awt.Insets;
 
+import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -84,9 +85,15 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 	int vertex_ID=0;
 	int vertex_ID2=0;
 	
-	
-	
-
+	//Image Icons
+	ImageIcon circ = new ImageIcon("C:\\Users\\Andrew07\\workspace\\GeneMachineFinal\\src\\Circle.png");
+	ImageIcon simple = new ImageIcon("C:\\Users\\Andrew07\\workspace\\GeneMachineFinal\\src\\Force.png");
+	ImageIcon filt = new ImageIcon("C:\\Users\\Andrew07\\workspace\\GeneMachineFinal\\src\\Filter.png");
+	ImageIcon orig = new ImageIcon("C:\\Users\\Andrew07\\workspace\\GeneMachineFinal\\src\\Original.png");
+	ImageIcon path = new ImageIcon("C:\\Users\\Andrew07\\workspace\\GeneMachineFinal\\src\\Path.png");
+	ImageIcon search = new ImageIcon("C:\\Users\\Andrew07\\workspace\\GeneMachineFinal\\src\\Search.png");
+	ImageIcon inc = new ImageIcon("C:\\Users\\Andrew07\\workspace\\GeneMachineFinal\\src\\Increase.png");
+	ImageIcon dec = new ImageIcon("C:\\Users\\Andrew07\\workspace\\GeneMachineFinal\\src\\Decrease.png");
 	
 	//Graph Implementation
 	 vtkGraphLayoutView view;
@@ -275,7 +282,8 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 		tabbedPane.addTab("Graph View", null, panel, null);
 		GridBagLayout gbl_panel = new GridBagLayout();
 		gbl_panel.columnWidths = new int[]{780, 84, 164, 168, 0};
-		gbl_panel.rowHeights = new int[]{36, 0, 0, 34, 446, 37, 29, 0};
+		//5th Value
+		gbl_panel.rowHeights = new int[]{36, 0, 0, 34, 5, 37, 29, 0};
 		gbl_panel.columnWeights = new double[]{0.0, 1.0, 0.0, 1.0, Double.MIN_VALUE};
 		gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		panel.setLayout(gbl_panel);
@@ -288,7 +296,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 		gbc_panel_2.fill = GridBagConstraints.BOTH;
 		gbc_panel_2.gridx = 0;
 		gbc_panel_2.gridy = 0;
-		panel.add(panel_2, gbc_panel_2);
+		
 		
 		JLabel lblNewLabel = new JLabel("Graph Layout Style:");
 		lblNewLabel.setFont(new Font("Copperplate Gothic Bold", Font.PLAIN, 11));
@@ -300,8 +308,8 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 		panel.add(lblNewLabel, gbc_lblNewLabel);
 		
 		//Circular View Button
-		JButton btnCircular = new JButton("Circular");
-		btnCircular.setMinimumSize(new Dimension(83, 23));
+		guiButton btnCircular = new guiButton(circ);
+		btnCircular.setMinimumSize(new Dimension(120, 120));
 		btnCircular.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				view.SetLayoutStrategyToCircular();
@@ -320,7 +328,8 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 		panel.add(btnCircular, gbc_btnCircular);
 		
 		//Simple2D Button
-		JButton btnSimpled = new JButton("Simple 2D");
+		guiButton btnSimpled = new guiButton(simple);
+		btnCircular.setMinimumSize(new Dimension(120, 120));
 		btnSimpled.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				view.SetLayoutStrategyToSimple2D();
@@ -358,7 +367,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 		
 		
 		//SHORTEST PATH!!
-		JButton btnFindShortestPath = new JButton("Find Shortest Path");
+		guiButton btnFindShortestPath = new guiButton(path);
 		btnFindShortestPath.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				
@@ -416,7 +425,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 			};
 		});
 		
-		JButton btnLoadUnfilteredGraph = new JButton("Load Unfiltered Graph");
+		guiButton btnLoadUnfilteredGraph = new guiButton(orig);
 		btnLoadUnfilteredGraph.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				GraphObserver obs = new GraphObserver();
@@ -431,7 +440,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 			}
 		});
 		
-		JButton btnFilterSelection = new JButton("Filter Selection");
+		guiButton btnFilterSelection = new guiButton(filt);
 		btnFilterSelection.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				GraphObserver obs = new GraphObserver();
@@ -502,7 +511,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 		gbc_panel_3.gridy = 6;
 		panel.add(panel_3, gbc_panel_3);
 		
-		JButton button = new JButton("+");
+		guiButton button = new guiButton(inc);
 		button.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				degreeCount++;
@@ -510,7 +519,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 			}
 		});
 		
-		JButton button_1 = new JButton("-");
+		guiButton button_1 = new guiButton(dec);
 		button_1.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				if(degreeCount!=0){
@@ -560,7 +569,8 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 		panel.add(textField_1, gbc_textField_1);
 		textField_1.setColumns(10);
 		
-		JButton btnSearch = new JButton("Search");
+		guiButton btnSearch = new guiButton(search);
+		//btnSearch.setMinimumSize(new Dimension(150, 150));
 		btnSearch.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				String textFieldGene = textField_1.getText();
@@ -576,28 +586,28 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 					{
 						vtkSelection sel = new vtkSelection();
 						System.out.println("PSEUDO NON-EXTRACTED");
-						sel=interactor.selectNode(link, textFieldGene,new String("1"),origGraph.getGraph());
+						sel=interactor.selectNode(textFieldGene,new String("1"),origGraph.getGraph());
 						link.SetCurrentSelection(sel);
 						
 						view.ResetCamera();
 						view.ZoomToSelection();
 						view.ApplyViewTheme(theme);
 						
-						sel = interactor.selectNode(link, textFieldGene,new String("0"),origGraph.getGraph());
+						sel = interactor.selectNode(textFieldGene,new String("0"),origGraph.getGraph());
 						link.SetCurrentSelection(sel);
 					}
 					else 
 					{
 						vtkSelection sel = new vtkSelection();
 						System.out.println("PSEUDO EXTRACTED");
-						sel=interactor.selectNode(link, textFieldGene,new String("1"),extractedGraph.getGraph());
+						sel=interactor.selectNode(textFieldGene,new String("1"),extractedGraph.getGraph());
 						link.SetCurrentSelection(sel);
 						
 						view.ResetCamera();
 						view.ZoomToSelection();
 						view.ApplyViewTheme(theme);
 						
-						sel=interactor.selectNode(link, textFieldGene,new String("0"),extractedGraph.getGraph());
+						sel=interactor.selectNode(textFieldGene,new String("0"),extractedGraph.getGraph());
 						link.SetCurrentSelection(sel);
 					}
 				}
@@ -607,7 +617,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 					vtkSelection sel = new vtkSelection();
 					if(original==true)
 					{
-						sel=interactor.selectNode(link, textFieldGene,textFieldDegrees,origGraph.getGraph());
+						sel=interactor.selectNode(textFieldGene,textFieldDegrees,origGraph.getGraph());
 						link.SetCurrentSelection(sel);
 						link.Update();
 						view.ResetCamera();
@@ -616,7 +626,7 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 					}
 					else 
 					{
-						sel=interactor.selectNode(link, textFieldGene,textFieldDegrees,extractedGraph.getGraph());
+						sel=interactor.selectNode(textFieldGene,textFieldDegrees,extractedGraph.getGraph());
 						link.SetCurrentSelection(sel);
 						link.Update();
 						view.ResetCamera();
@@ -631,7 +641,8 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 				tabbedPane.setSelectedIndex(0);
 			}
 		});
-		btnSearch.setMinimumSize(new Dimension(83, 27));
+		//83,27
+		//btnSearch.setMinimumSize(new Dimension(83, 27));
 		GridBagConstraints gbc_btnSearch = new GridBagConstraints();
 		gbc_btnSearch.anchor = GridBagConstraints.NORTH;
 		gbc_btnSearch.weighty = 1.0;
@@ -838,28 +849,38 @@ public class AppTesting2 extends JFrame implements ActionListener,MouseListener{
 			if(node0!=null)
 				node0_field_type = node0.GetFieldType();
 			
+			verticesNode=-1;
 			if(node1_field_type==3)
 			{
 				verticesNode=1;
-				edgesNode=0;
+				if(node0_field_type!=-1)
+					edgesNode=0;
+				else 
+					edgesNode=-1;
 			}
 			else if(node0_field_type==3)
 			{
 				verticesNode=0;
-				edgesNode=1;
+				if(node1_field_type!=-1)
+					edgesNode=1;
+				else
+					edgesNode=-1;
 			}
 			
+			if(verticesNode!=-1)
+				vertices=(vtkIdTypeArray)(link.GetCurrentSelection().GetNode(verticesNode).GetSelectionList());
+			if(edgesNode!=-1)
+				edges=(vtkIdTypeArray)(link.GetCurrentSelection().GetNode(edgesNode).GetSelectionList());
 			
-			vertices=(vtkIdTypeArray)(link.GetCurrentSelection().GetNode(verticesNode).GetSelectionList());
-			edges=(vtkIdTypeArray)(link.GetCurrentSelection().GetNode(edgesNode).GetSelectionList());
-			
-			System.out.println("Vertices");
-			for(int i=0;i<vertices.GetSize();i++)
-				System.out.println(vertices.GetValue(i));
+//			System.out.println("Vertices");
+//			for(int i=0;i<vertices.GetSize();i++)
+//				System.out.println(vertices.GetValue(i));
 			//System.out.println("Vertices: " + vertices.GetValue(0));
 			if(edges!=null)
 			{
 				numberOfEdges=edges.GetSize();
+//				for(int i=0;i<edges.GetSize();i++)
+//					System.out.println(edges.GetValue(i));		
 			}
 			
 			

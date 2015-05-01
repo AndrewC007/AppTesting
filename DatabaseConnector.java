@@ -310,5 +310,6 @@ public class DatabaseConnector
 					} catch(Exception exc) {
 					      exc.getMessage();
 					}			
+					editorPane.setCaretPosition(0);
 				}	
 }

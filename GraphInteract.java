@@ -58,7 +58,7 @@ public class GraphInteract {
 	
 	//GENE SEARCH WITH DEGREES OF INTERACTION (USES AN EXTERNAL FUNCTION CREATED IN A SEPERATE CLASS)(Separate class created
 	//for simplicity of merging the code
-	public vtkSelection selectNode(vtkAnnotationLink link, String gene, String degrees,vtkMutableUndirectedGraph graph) 
+	public vtkSelection selectNode( String gene, String degrees,vtkMutableUndirectedGraph graph) 
 	{
 		vtkSelection sel = new vtkSelection(); 
 		if(Integer.parseInt(degrees)==0)
@@ -85,7 +85,7 @@ public class GraphInteract {
 						temp.InsertNextValue(i);
 					
 						node.SetSelectionList(temp);
-						sel.AddNode(emptyEdgeNode);
+					//	sel.AddNode(emptyEdgeNode);
 						sel.AddNode(node);
 						break;
 					}
@@ -105,7 +105,7 @@ public class GraphInteract {
 			{
 				if(gene.equals(geneNames.GetValue(i)))
 				{
-					sel=InteractionDegrees.SelectDegrees(graph, Integer.parseInt(degrees), i, link);
+					sel=InteractionDegrees.SelectDegrees(graph, Integer.parseInt(degrees), i);
 					break;
 					
 				}
@@ -135,7 +135,7 @@ public class GraphInteract {
 		sel.AddNode(nodeEdges);
 		sel.AddNode(node);
 		
-	
+		
 		
 		vtkExtractSelectedGraph extract = new vtkExtractSelectedGraph();
 		

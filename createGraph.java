@@ -388,10 +388,12 @@ public class CreateGraph {
 				weights.SetNumberOfComponents(1);
 				weights.SetName("weights");
 				
+				int totalInts=0;
 	
 				for(int i=0; i<edgeWeights.size();i++)
 				{
 					weights.InsertNextValue(edgeWeights.get(i));
+					totalInts= totalInts + edgeWeights.get(i);
 				}
 				
 				testing.getGraph().GetEdgeData().AddArray(weights);
@@ -400,7 +402,11 @@ public class CreateGraph {
 				testing.setSystem(experimentalSystem);
 				testing.setSystemType(experimentalSystemType);
 				
+				
+				System.out.println("Edges : " + totalInts);
+				System.out.println("Vertices : " + sortedGenes.size());
 			}
+			
 		}
 		catch(Exception e)
 		{ 
