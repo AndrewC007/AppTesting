@@ -88,6 +88,7 @@ public vtkIdTypeArray FindPath(int vertex_ID1, int vertex_ID2,vtkMutableUndirect
 		
 		//total steps in path minus 1
 		steps_left=cbfs.GetValue(vertex_ID2)-1;
+//		AppTesting2.updateVertexNumber(steps_left+1);
 		
 		//Find the path
 		while(!Found){
@@ -105,7 +106,7 @@ public vtkIdTypeArray FindPath(int vertex_ID1, int vertex_ID2,vtkMutableUndirect
 								
 				//Found the path
 				if(steps.GetValue(cindex)==vertex_ID2){
-				Found=true;
+					Found=true;
 				}
 				
 				//find the next possible steps
@@ -129,6 +130,7 @@ public vtkIdTypeArray FindPath(int vertex_ID1, int vertex_ID2,vtkMutableUndirect
 					
 		}
 			
+		System.out.println("Size of path: " + cpath.GetSize());
 		return cpath;
 	}
 
@@ -138,20 +140,20 @@ public vtkIdTypeArray FindEdges(vtkIdTypeArray vertex_list, vtkMutableUndirected
 		vtkEdgeListIterator edges=new vtkEdgeListIterator();
 		vtkIdTypeArray edgearray=new vtkIdTypeArray();
 		
-		for(int j=0;j<vertex_list.GetNumberOfTuples()-1;j++){
+		for(int j=0;j<vertex_list.GetSize()-1;j++){
 						
 			g.GetEdges(edges);
 			while(edges.HasNext()){
 			
 				vtkGraphEdge e=edges.NextGraphEdge();
 						
-				if(e.GetSource()==vertex_list.GetValue(j) && e.GetTarget()==vertex_list.GetValue(j+1)||e.GetSource()==vertex_list.GetValue(j+1) && e.GetTarget()==vertex_list.GetValue(j)){
+				if((e.GetSource()==vertex_list.GetValue(j) && e.GetTarget()==vertex_list.GetValue(j+1))||(e.GetSource()==vertex_list.GetValue(j+1) && e.GetTarget()==vertex_list.GetValue(j))){
 					edgearray.InsertNextValue(e.GetId());
 				}
-			
 			}
 		}		
-		
+	
+		System.out.println("Number of Edges in path: " + edgearray.GetSize());
 		return edgearray;			
 }
 
@@ -173,6 +175,7 @@ public vtkSelection GetSelection(vtkIdTypeArray vertex_list,vtkIdTypeArray edge_
 	vertex_sel.SetSelectionList(vertex_list);
     edge_sel.SetSelectionList(edge_list);
     
+   
 	sel.AddNode(edge_sel);
 	sel.AddNode(vertex_sel);
 	

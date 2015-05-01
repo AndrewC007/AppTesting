@@ -26,6 +26,8 @@ public class GraphInteract {
 			
 			 // Required for SelectionCallback function to set the vertex selectionNode to node 1 in the selection
 			vtkSelectionNode emptyEdgeNode = new vtkSelectionNode(); 
+			emptyEdgeNode.SetFieldType(4);
+			emptyEdgeNode.SetContentType(4);
 			
 			vtkStringArray geneNames = (vtkStringArray)graph.GetVertexData().GetAbstractArray("labels");
 	
@@ -52,41 +54,39 @@ public class GraphInteract {
 			System.out.println("Exception Thrown:");
 			System.out.println(e.getMessage());
 		}
-		
 	}
 	
 	//GENE SEARCH WITH DEGREES OF INTERACTION (USES AN EXTERNAL FUNCTION CREATED IN A SEPERATE CLASS)(Separate class created
 	//for simplicity of merging the code
-	public void selectNode(vtkAnnotationLink link, String gene, String degrees,vtkMutableUndirectedGraph graph)
+	public vtkSelection selectNode( String gene, String degrees,vtkMutableUndirectedGraph graph) 
 	{
+		vtkSelection sel = new vtkSelection(); 
 		if(Integer.parseInt(degrees)==0)
 		{
+			
 			System.out.println("TEST 0");
 			try{
-				vtkSelection sel = new vtkSelection(); 
 				vtkSelectionNode node = new vtkSelectionNode(); //Vertex selectionNode
 				node.SetContentType(4);
 				node.SetFieldType(3);
 				
 				 // Required for SelectionCallback function to set the vertex selectionNode to node 1 in the selection
 				vtkSelectionNode emptyEdgeNode = new vtkSelectionNode(); 
+				emptyEdgeNode.SetContentType(4);
+				emptyEdgeNode.SetFieldType(4);
 				
 				vtkStringArray geneNames = (vtkStringArray)graph.GetVertexData().GetAbstractArray("labels");
-		
-				
 				
 				for(int i=0; i<geneNames.GetNumberOfTuples();i++)
 				{
 					if(gene.equals(geneNames.GetValue(i)))
 					{
-						
 						vtkIdTypeArray temp= new vtkIdTypeArray();
 						temp.InsertNextValue(i);
-						
+					
 						node.SetSelectionList(temp);
-						sel.AddNode(emptyEdgeNode);
+					//	sel.AddNode(emptyEdgeNode);
 						sel.AddNode(node);
-						link.SetCurrentSelection(sel);
 						break;
 					}
 				}
@@ -105,29 +105,38 @@ public class GraphInteract {
 			{
 				if(gene.equals(geneNames.GetValue(i)))
 				{
-					InteractionDegrees.SelectDegrees(graph, Integer.parseInt(degrees), i, link);
+					sel=InteractionDegrees.SelectDegrees(graph, Integer.parseInt(degrees), i);
 					break;
 					
 				}
 			}
 			
 		}
-		
+		return sel;
 	}
 	
 	
-	public vtkMutableUndirectedGraph extract(vtkIdTypeArray vertices, vtkMutableUndirectedGraph originalGraph )
+	public vtkMutableUndirectedGraph extract(vtkIdTypeArray vertices, vtkIdTypeArray edges, vtkMutableUndirectedGraph originalGraph )
 	{
 		vtkMutableUndirectedGraph extractedGraph = new vtkMutableUndirectedGraph();
 		
 		vtkSelection sel = new vtkSelection();
+		
 		vtkSelectionNode node = new vtkSelectionNode();
 		node.SetContentType(4);
 		node.SetFieldType(3);
-		
-		
 		node.SetSelectionList(vertices);
+		
+		vtkSelectionNode nodeEdges = new vtkSelectionNode();
+		nodeEdges.SetContentType(4);
+		nodeEdges.SetFieldType(4);
+		nodeEdges.SetSelectionList(edges);
+		
+		sel.AddNode(nodeEdges);
 		sel.AddNode(node);
+		
+		
+		
 		vtkExtractSelectedGraph extract = new vtkExtractSelectedGraph();
 		
 		extract.SetInputData(0, originalGraph);
